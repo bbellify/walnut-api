@@ -6,7 +6,7 @@
     "build": "npx tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/server.js",
-    "dev": "nodemon src/server.ts",
+    "dev": "tsx src/server.ts",
     "lint": "eslint"
   },
   "author": "Brian Bellinger",
@@ -27,9 +27,8 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.8.0",
-    "nodemon": "^3.1.4",
     "prettier": "^3.3.3",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.16.2",
     "typescript": "^5.5.3",
     "typescript-eslint": "^7.16.0"
   }

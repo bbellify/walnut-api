@@ -1,6 +1,9 @@
 import express, { Request, Response, Router } from 'express';
 import dotenv from 'dotenv';
-import fetch from 'node-fetch';
+
+// TODO: any
+const fetch = (url: string, options?: any) =>
+  import('node-fetch').then(({ default: fetch }) => fetch(url, options));
 
 const router: Router = express.Router();
 dotenv.config();
@@ -15,7 +18,7 @@ const headers = {
 
 const url = `http://${USER}:${PASS}@127.0.0.1:8332/`;
 function dataString(method: string, params?: string[]): string {
-  // method should be type that has method name and id
+  // TODO: method should be type that has method name and id
   return `{"jsonrpc":"1.0","id":"curltext","method":${method},"params":${params}`;
 }
 
@@ -28,7 +31,6 @@ router.get('/getblockcount', (_req: Request, response: Response) => {
     headers: headers
   };
 
-  // const data = await response.json();
   fetch(RPC_URL as string, options)
     .then((res) => {
       response.send(res);
@@ -42,4 +44,5 @@ router.get('/batchtest', (req, res) => {
   // use array of methods with jsonpc:1, try two and see what happes
   console.log('batching');
 });
+
 export default router;

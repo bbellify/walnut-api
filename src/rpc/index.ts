@@ -12,48 +12,48 @@ const USER = process.env.RPC_USER;
 const PASS = process.env.RPC_PASSWORD;
 const RPC_URL = process.env.RPC_URL as string;
 
-const headers = {
+// TODO: maybe auth string should come from fe
+const headers: string = JSON.stringify({
   'content-type': 'text/plain;',
-  Authorization: `Basic ${USER}:${PASS}`
-};
+  Authorization: `Basic ${Buffer.from(`${USER}:${PASS}`).toString('base64')}`
+});
 
 function dataString(method: string, params?: string[]): string {
   // TODO: method should be type that has method name and id
-  return `{"jsonrpc":"1.0","id":"curltext","method":${method},"params":${params}`;
+  return JSON.stringify({
+    jsonrpc: '1.0',
+    id: 'curltext',
+    method: method,
+    params: params ?? []
+  });
 }
 
 router.get('/', (_req: Request, res: Response) => res.send('rpc OK'));
 
-router.get('/getblockcount', (_req: Request, response: Response) => {
+router.get('/getblockcount', async (_req: Request, response: Response) => {
   const options = {
     method: 'POST',
-    body: JSON.stringify(dataString('getblockcount')),
-    headers: headers
+    body: dataString('getblockcount'),
+    headers: JSON.stringify(headers)
   };
 
-  fetch(RPC_URL, options)
-    .then((res) => {
-      response.send(res);
-    })
-    .catch((err) => {
-      console.log('error log', err);
-    });
+  const res = await fetch(RPC_URL, options);
+  const data = await res.json();
+
+  response.send(data);
 });
 
-router.get('/getblockchaininfo', (_req: Request, response: Response) => {
+router.get('/getblockchaininfo', async (_req: Request, response: Response) => {
   const options = {
     method: 'POST',
-    body: JSON.stringify(dataString('getblockchaininfo')),
-    headers: headers
+    body: dataString('getblockchaininfo'),
+    headers: JSON.stringify(headers)
   };
 
-  fetch(RPC_URL, options)
-    .then((res) => {
-      response.send(res);
-    })
-    .catch((err) => {
-      console.log('error log', err);
-    });
+  const res = await fetch(RPC_URL, options);
+  const data = await res.json();
+
+  response.send(data);
 });
 
 router.get('/batchtest', (req, res) => {

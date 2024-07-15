@@ -10,13 +10,13 @@ dotenv.config();
 
 const USER = process.env.RPC_USER;
 const PASS = process.env.RPC_PASSWORD;
-const RPC_URL = process.env.RPC_URL;
+const RPC_URL = process.env.RPC_URL as string;
 
 const headers = {
-  'content-type': 'text/plain;'
+  'content-type': 'text/plain;',
+  Authorization: `Basic ${USER}:${PASS}`
 };
 
-const url = `http://${USER}:${PASS}@127.0.0.1:8332/`;
 function dataString(method: string, params?: string[]): string {
   // TODO: method should be type that has method name and id
   return `{"jsonrpc":"1.0","id":"curltext","method":${method},"params":${params}`;
@@ -31,7 +31,7 @@ router.get('/getblockcount', (_req: Request, response: Response) => {
     headers: headers
   };
 
-  fetch(RPC_URL as string, options)
+  fetch(RPC_URL, options)
     .then((res) => {
       response.send(res);
     })

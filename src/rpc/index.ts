@@ -40,6 +40,22 @@ router.get('/getblockcount', (_req: Request, response: Response) => {
     });
 });
 
+router.get('/getblockchaininfo', (_req: Request, response: Response) => {
+  const options = {
+    method: 'POST',
+    body: JSON.stringify(dataString('getblockchaininfo')),
+    headers: headers
+  };
+
+  fetch(RPC_URL, options)
+    .then((res) => {
+      response.send(res);
+    })
+    .catch((err) => {
+      console.log('error log', err);
+    });
+});
+
 router.get('/batchtest', (req, res) => {
   // use array of methods with jsonpc:1, try two and see what happes
   console.log('batching');

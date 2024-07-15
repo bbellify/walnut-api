@@ -56,9 +56,33 @@ router.get('/getblockchaininfo', async (_req: Request, response: Response) => {
   response.send(data);
 });
 
-router.get('/batchtest', (req, res) => {
-  // use array of methods with jsonpc:1, try two and see what happes
-  console.log('batching');
+router.get('/batchtest', async (_req, response) => {
+  // this batch data structure works
+  const body = JSON.stringify([
+    {
+      jsonrpc: '1.0',
+      id: 'curltext',
+      method: 'getblockcount',
+      params: []
+    },
+    {
+      jsonrpc: '1.0',
+      id: 'curltext',
+      method: 'getblockchaininfo',
+      params: []
+    }
+  ]);
+
+  const options = {
+    method: 'POST',
+    body: body,
+    headers: headers
+  };
+
+  const res = await fetch(RPC_URL, options);
+  const data = await res.json();
+
+  response.send(data);
 });
 
 export default router;

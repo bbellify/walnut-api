@@ -13,10 +13,10 @@ const PASS = process.env.RPC_PASSWORD;
 const RPC_URL = process.env.RPC_URL as string;
 
 // TODO: maybe auth string should come from fe
-const headers: string = JSON.stringify({
+const headers = {
   'content-type': 'text/plain;',
   Authorization: `Basic ${Buffer.from(`${USER}:${PASS}`).toString('base64')}`
-});
+};
 
 function dataString(method: string, params?: string[]): string {
   // TODO: method should be type that has method name and id
@@ -34,7 +34,7 @@ router.get('/getblockcount', async (_req: Request, response: Response) => {
   const options = {
     method: 'POST',
     body: dataString('getblockcount'),
-    headers: JSON.stringify(headers)
+    headers: headers
   };
 
   const res = await fetch(RPC_URL, options);
@@ -47,7 +47,7 @@ router.get('/getblockchaininfo', async (_req: Request, response: Response) => {
   const options = {
     method: 'POST',
     body: dataString('getblockchaininfo'),
-    headers: JSON.stringify(headers)
+    headers: headers
   };
 
   const res = await fetch(RPC_URL, options);

@@ -6,8 +6,9 @@
     "build": "npx tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/server.js",
-    "dev": "tsx src/server.ts",
-    "lint": "eslint"
+    "dev": "tsx watch src/server.ts",
+    "lint": "eslint",
+    "fresh": "rm -f src/db/db.db && npm run dev"
   },
   "author": "Brian Bellinger",
   "license": "ISC",
@@ -16,7 +17,8 @@
     "body-parser": "^1.20.2",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.7.0",

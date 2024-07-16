@@ -5,8 +5,8 @@ import dotenv from 'dotenv';
 const fetch = (url: string, options?: any) =>
   import('node-fetch').then(({ default: fetch }) => fetch(url, options));
 
-const router: Router = express.Router();
 dotenv.config();
+const router: Router = express.Router();
 
 const USER = process.env.RPC_USER;
 const PASS = process.env.RPC_PASSWORD;
@@ -28,7 +28,7 @@ function dataString(method: string, params?: string[]): string {
   });
 }
 
-router.get('/', (_req: Request, res: Response) => res.send('rpc OK'));
+router.get('/', (_req: Request, res: Response) => res.send('/rpc OK'));
 
 router.get('/getblockcount', async (_req: Request, response: Response) => {
   const options = {

@@ -1,5 +1,6 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import './db/index.ts';
 
 import rpcRouter from './routes/rpc';
@@ -9,6 +10,13 @@ dotenv.config();
 const PORT = process.env.PORT;
 
 const server: Express = express();
+// TODO need to set this an env variable depending on dev/prod envs
+server.use(
+  cors({
+    origin: 'http://localhost:5555',
+    methods: ['GET', 'POST']
+  })
+);
 
 server.use('/auth', authRouter);
 server.use('/rpc', rpcRouter);

@@ -17,8 +17,8 @@ export const db: Database = new sqlite3.Database('src/db/db.db');
 
 const userQuery = `
   CREATE TABLE IF NOT EXISTS user (
-    first TEXT NOT NULL,
-    last TEXT NOT NULL
+    username TEXT NOT NULL,
+    password TEXT NOT NULL
   )
 `;
 

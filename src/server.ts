@@ -11,6 +11,7 @@ dotenv.config();
 const PORT = process.env.PORT;
 
 const server: Express = express();
+server.use(express.json());
 // TODO need to set this an env variable depending on dev/prod envs
 server.use(
   cors({

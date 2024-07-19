@@ -30,19 +30,24 @@ function dataString(method: string, params?: string[]): string {
 
 router.get('/', (_req: Request, res: Response) => res.send('/rpc OK'));
 
-router.get('/getblockcount', async (_req: Request, response: Response) => {
+router.get('/getblockcount', async (_req: Request, res: Response) => {
   const options = {
     method: 'POST',
     body: dataString('getblockcount'),
     headers: headers
   };
 
-  const res = await fetch(RPC_URL, options);
-  const data = await res.json();
-
-  response.send(data);
+  try {
+    const response = await fetch(RPC_URL, options);
+    const data = await response.json();
+    res.send(data);
+  } catch (error) {
+    console.log('error', error);
+    res.status(501).send({ error: 'node error' });
+  }
 });
 
+// TODO refactor all these with try/catch
 router.get('/getblockchaininfo', async (_req: Request, response: Response) => {
   const options = {
     method: 'POST',

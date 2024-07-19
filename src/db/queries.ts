@@ -22,10 +22,10 @@ export const register = async (username: string, password: string) => {
   await db.close();
 };
 
-// TODO this is for dev, remove later
-export const selectAll = async () => {
+// this is just getting all, but there will only ever be one
+export const getUser = async () => {
   const db = await connectDB();
-  const all = await db.all('SELECT username FROM user');
-  console.log('selectall', all);
+  const all = await db.all('SELECT username, password FROM user');
   await db.close();
+  return all[0];
 };

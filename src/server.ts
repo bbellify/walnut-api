@@ -6,6 +6,7 @@ import { init } from './db/queries.js';
 
 import rpcRouter from './routes/rpc';
 import authRouter from './routes/auth';
+import devRouter from './routes/dev';
 
 dotenv.config();
 const PORT = process.env.PORT;
@@ -22,6 +23,8 @@ server.use(
 
 server.use('/auth', authRouter);
 server.use('/rpc', rpcRouter);
+// TODO remove this at some point
+server.use('/dev', devRouter);
 
 server.get('/init', async (_req: Request, res: Response) => {
   try {

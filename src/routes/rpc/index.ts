@@ -8,15 +8,13 @@ const fetch = (url: string, options?: any) =>
 dotenv.config();
 const router: Router = express.Router();
 
-const USER = process.env.RPC_USER;
-const PASS = process.env.RPC_PASSWORD;
 const RPC_URL = process.env.RPC_URL as string;
 
 // TODO: maybe auth string should come from fe
-const headers = {
-  'content-type': 'text/plain;',
-  Authorization: `Basic ${Buffer.from(`${USER}:${PASS}`).toString('base64')}`
-};
+// const headers = {
+//   'content-type': 'text/plain;',
+//   Authorization: `Basic ${Buffer.from(`${USER}:${PASS}`).toString('base64')}`
+// };
 
 function dataString(method: string, params?: string[]): string {
   // TODO: method should be type that has method name and id
@@ -33,8 +31,8 @@ router.get('/', (_req: Request, res: Response) => res.send('/rpc OK'));
 router.get('/getblockcount', async (_req: Request, res: Response) => {
   const options = {
     method: 'POST',
-    body: dataString('getblockcount'),
-    headers: headers
+    body: dataString('getblockcount')
+    // headers: headers
   };
 
   try {
@@ -51,8 +49,8 @@ router.get('/getblockcount', async (_req: Request, res: Response) => {
 router.get('/getblockchaininfo', async (_req: Request, response: Response) => {
   const options = {
     method: 'POST',
-    body: dataString('getblockchaininfo'),
-    headers: headers
+    body: dataString('getblockchaininfo')
+    // headers: headers
   };
 
   const res = await fetch(RPC_URL, options);
@@ -80,8 +78,8 @@ router.get('/batchtest', async (_req, response) => {
 
   const options = {
     method: 'POST',
-    body: body,
-    headers: headers
+    body: body
+    // headers: headers
   };
 
   const res = await fetch(RPC_URL, options);

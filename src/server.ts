@@ -1,12 +1,10 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import initDB from './db/init.js';
-import { init } from './db/queries.js';
+// import initDB from './db/init.js';
 
 import rpcRouter from './routes/rpc';
-import authRouter from './routes/auth';
-import devRouter from './routes/dev';
+import systemRouter from './routes/system';
 
 dotenv.config();
 const PORT = process.env.PORT;
@@ -21,24 +19,14 @@ server.use(
   })
 );
 
-server.use('/auth', authRouter);
 server.use('/rpc', rpcRouter);
-// TODO remove this at some point
-server.use('/dev', devRouter);
-
-server.get('/init', async (_req: Request, res: Response) => {
-  try {
-    const user = await init();
-    res.send({ initialized: user ? true : false });
-  } catch {
-    res.status(500).send({ error: 'failed to initialize' });
-  }
-});
+server.use('/system', systemRouter);
 
 server.get('/', (_req: Request, res: Response) => {
   res.send('OK');
 });
 
-initDB().then(() => {
-  server.listen(PORT, () => console.log(`Walnut API running on port ${PORT}`));
-});
+server.listen(PORT, () => console.log(`Walnut API running on port ${PORT}`));
+// initDB().then(() => {
+//   server.listen(PORT, () => console.log(`Walnut API running on port ${PORT}`));
+// });

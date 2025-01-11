@@ -19,10 +19,12 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "node-fetch": "^3.3.2",
-    "osx-temperature-sensor": "^1.0.8",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "systeminformation": "^5.25.9"
+  },
+  "optionalDependencies": {
+    "osx-temperature-sensor": "^1.0.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.7.0",

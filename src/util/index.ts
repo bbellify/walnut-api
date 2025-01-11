@@ -14,11 +14,11 @@ export function secondsToTime(seconds: number): string {
 
   let timeString = '';
 
-  if (days > 0) timeString += `${days} day${days > 1 ? 's' : ''}, `;
-  if (hours > 0) timeString += `${hours} hour${hours > 1 ? 's' : ''}, `;
-  if (minutes > 0) timeString += `${minutes} minute${minutes > 1 ? 's' : ''}, `;
+  if (days > 0) timeString += `${days}d`;
+  if (hours > 0) timeString += `${hours}h`;
+  if (minutes > 0) timeString += `${minutes}m`;
   if (remainingSeconds > 0 || timeString === '') {
-    timeString += `${remainingSeconds} second${remainingSeconds !== 1 ? 's' : ''}`;
+    timeString += `${remainingSeconds}s`;
   }
   return timeString.replace(/,\s*$/, '');
 }

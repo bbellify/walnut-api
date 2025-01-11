@@ -1,24 +1,29 @@
 import express, { Request, Response, Router } from 'express';
 import { cpuTemperature, mem, currentLoad, time } from 'systeminformation';
 import { secondsToTime, celciusToFahrenheit } from '../../util';
+import SSE from '../../sse';
 
 const router: Router = express.Router();
 
-router.get('/status', async (req: Request, res: Response) => {
+async function getSystemStatus() {
   const uptime = time();
   const memory = await mem();
   const cpuUsage = await currentLoad();
   const temp = await cpuTemperature();
+
+  return {
+    uptime: uptime ? secondsToTime(uptime.uptime) : '',
+    cpuUsage: cpuUsage ? cpuUsage.currentLoad.toFixed(2) : '',
+    memoryUsage: memory
+      ? (((memory.total - memory.available) / memory.total) * 100).toFixed(2)
+      : '',
+    temperature: temp ? celciusToFahrenheit(temp.main).toFixed(2) : ''
+  };
+}
+
+router.get('/status', async (req: Request, res: Response) => {
   try {
-    const systemStatus = {
-      uptime: uptime ? secondsToTime(uptime.uptime) : '',
-      cpuUsage: cpuUsage ? cpuUsage.currentLoad.toFixed(2) : '',
-      memoryUsage: memory
-        ? (((memory.total - memory.available) / memory.total) * 100).toFixed(2)
-        : '',
-      temperature: temp ? celciusToFahrenheit(temp.main).toFixed(2) : ''
-    };
-    console.log('systemStatus', systemStatus);
+    const systemStatus = await getSystemStatus();
 
     res.json({
       status: 200,
@@ -35,5 +40,15 @@ router.get('/status', async (req: Request, res: Response) => {
     });
   }
 });
+
+setInterval(async () => {
+  SSE.sendUpdate({
+    update: {
+      type: 'systemStatus',
+      data: await getSystemStatus(),
+      timestamp: new Date().toISOString()
+    }
+  });
+}, 10000);
 
 export default router;

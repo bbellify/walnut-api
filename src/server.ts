@@ -1,10 +1,7 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-// import initDB from './db/init.js';
-
-import rpcRouter from './routes/rpc';
-import systemRouter from './routes/system';
+import SSE from './sse';
 
 dotenv.config();
 const PORT = process.env.PORT;
@@ -18,6 +15,13 @@ server.use(
     methods: ['GET', 'POST']
   })
 );
+
+server.get('/stream', (req, res) => {
+  const clientId = SSE.init(req, res);
+});
+
+import rpcRouter from './routes/rpc';
+import systemRouter from './routes/system';
 
 server.use('/rpc', rpcRouter);
 server.use('/system', systemRouter);

@@ -10,12 +10,6 @@ const router: Router = express.Router();
 
 const RPC_URL = process.env.RPC_URL as string;
 
-// TODO: maybe auth string should come from fe
-// const headers = {
-//   'content-type': 'text/plain;',
-//   Authorization: `Basic ${Buffer.from(`${USER}:${PASS}`).toString('base64')}`
-// };
-
 function dataString(method: string, params?: string[]): string {
   // TODO: method should be type that has method name and id
   return JSON.stringify({

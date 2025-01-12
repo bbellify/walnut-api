@@ -1,5 +1,115 @@
+import fetch from 'node-fetch';
 import { cpuTemperature, mem, currentLoad, time } from 'systeminformation';
 import { secondsToTime, celciusToFahrenheit } from '../../util';
+import dotenv from 'dotenv';
+
+dotenv.config();
+const COIN_GECKO_API_KEY = process.env.COIN_GECKO_API_KEY as string;
+const COIN_GECKO_API_URL = 'https://api.coingecko.com/api/v3/coins/bitcoin';
+const options = {
+  method: 'GET',
+  headers: {
+    accept: 'application/json',
+    'x-cg-demo-api-key': COIN_GECKO_API_KEY
+  }
+};
+
+type MarketData = {
+  current_price: {
+    usd: number;
+  };
+  ath: {
+    usd: number;
+  };
+  market_cap: {
+    usd: number;
+  };
+  ath_date: {
+    usd: string;
+  };
+  ath_change_percentage: {
+    usd: number;
+  };
+};
+type PriceData = {
+  price: string;
+  marketCap: string;
+  ath: string;
+  declineFromAth: string;
+  athDate: string;
+};
+export async function getPriceData(): Promise<PriceData | object> {
+  return fetch(COIN_GECKO_API_URL, options)
+    .then(async (res) => {
+      const response = (await res.json()) as { market_data: MarketData };
+      const marketData = response.market_data;
+      if (marketData) {
+        const priceData = toPriceData(marketData);
+        console.log('priceData', priceData);
+        return priceData;
+      }
+      return {};
+    })
+    .catch((err) => {
+      console.error(err);
+      return {};
+    });
+}
+
+function toPriceData(data: MarketData): PriceData {
+  const priceData = {
+    price: '',
+    marketCap: '',
+    ath: '',
+    declineFromAth: '',
+    athDate: ''
+  };
+  if (data.current_price) {
+    priceData.price = '$' + data.current_price.usd.toLocaleString();
+  }
+  if (data.ath) {
+    priceData.ath = '$' + data.ath.usd.toLocaleString();
+  }
+  if (data.ath_change_percentage) {
+    priceData.declineFromAth =
+      data.ath_change_percentage.usd.toLocaleString() + '%';
+  }
+  if (data.market_cap) {
+    priceData.marketCap = '$' + formatLargeNumber(data.market_cap.usd);
+  }
+  if (data.ath_date) {
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    };
+    priceData.athDate = new Date(data.ath_date.usd).toLocaleDateString(
+      'en-US',
+      options
+    );
+  }
+  return priceData;
+}
+
+function formatLargeNumber(number: number): string {
+  const absNumber = Math.abs(number);
+
+  if (absNumber >= 1e12) {
+    // Trillion
+    return (number / 1e12).toFixed(2) + 'T';
+  } else if (absNumber >= 1e9) {
+    // Billion
+    return (number / 1e9).toFixed(2) + 'B';
+  } else if (absNumber >= 1e6) {
+    // Million
+    return (number / 1e6).toFixed(2) + 'M';
+  } else if (absNumber >= 1e3) {
+    // Thousand
+    return (number / 1e3).toFixed(2) + 'K';
+  } else {
+    return number.toString();
+  }
+}
 
 export async function getSystemStatus() {
   const uptime = time();
@@ -32,8 +142,6 @@ export function dataString(method: string, params?: string[]): string {
 export function getSummary() {
   return {
     blockCount: '800,000',
-    price: '$100,000',
-    marketCap: '1T',
     networkConnections: '42',
     syncStatus: 'synced',
     blockchainSize: '750G'

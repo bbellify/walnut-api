@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from 'express';
 import dotenv from 'dotenv';
 import SSE from '../../sse';
-import { dataString, getSummary, getSystemStatus } from './data';
+import { dataString, getSummary, getSystemStatus, getPriceData } from './data';
 
 // TODO: any
 // const fetch = (url: string, options?: any) =>
@@ -44,7 +44,7 @@ setInterval(async () => {
       timestamp: new Date().toISOString()
     }
   });
-}, 10000);
+}, 10000); // 10 seconds (helpful for dev, make less frequent eventually)
 
 router.get('/summary', (_req: Request, res: Response) => {
   try {
@@ -63,6 +63,44 @@ router.get('/summary', (_req: Request, res: Response) => {
     });
   }
 });
+
+router.get('/price', async (_req: Request, res: Response) => {
+  try {
+    const priceData = await getPriceData();
+    if (Object.entries(priceData).length) {
+      res.json({
+        status: 200,
+        message: 'get price successful',
+        data: priceData,
+        type: 'price',
+        errors: null
+      });
+    } else {
+      res.json({
+        status: 500,
+        error: 'Server error'
+      });
+    }
+  } catch {
+    res.json({
+      status: 500,
+      error: 'Server error'
+    });
+  }
+});
+
+setInterval(async () => {
+  const priceData = await getPriceData();
+  if (Object.entries(priceData).length) {
+    SSE.sendUpdate({
+      update: {
+        type: 'systemStatus',
+        data: await getSystemStatus(),
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+}, 600000); // 10 mins
 
 router.get('/getblockcount', async (_req: Request, res: Response) => {
   const options = {

@@ -9,6 +9,11 @@ import { dataString, getSummary, getSystemStatus } from './data';
 
 const router: Router = express.Router();
 
+router.get('/stream', (req, res) => {
+  // const clientId = SSE.init(req, res);
+  SSE.init(req, res);
+});
+
 dotenv.config();
 const RPC_URL = process.env.RPC_URL as string;
 

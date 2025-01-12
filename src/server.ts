@@ -1,25 +1,20 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import SSE from './sse';
 
 dotenv.config();
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+const DEV_ORIGIN = process.env.DEV_ORIGIN;
 
 const server: Express = express();
 server.use(express.json());
-// TODO need to set this an env variable depending on dev/prod envs
+// allowing origin in .env for dev
 server.use(
   cors({
-    origin: 'http://localhost:5555',
+    origin: DEV_ORIGIN,
     methods: ['GET', 'POST']
   })
 );
-
-server.get('/stream', (req, res) => {
-  // const clientId = SSE.init(req, res);
-  SSE.init(req, res);
-});
 
 import dashboardRouter from './routes/dashboard';
 
@@ -29,6 +24,6 @@ server.get('/', (_req: Request, res: Response) => {
   res.send('OK');
 });
 
-server.listen(PORT, '0.0.0.0', () =>
+server.listen(PORT, '127.0.0.1', () =>
   console.log(`Walnut API running on port ${PORT}`)
 );

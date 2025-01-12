@@ -42,9 +42,9 @@ setInterval(async () => {
   });
 }, 10000); // 10 seconds (helpful for dev, make less frequent eventually)
 
-router.get('/summary', (_req: Request, res: Response) => {
+router.get('/summary', async (_req: Request, res: Response) => {
   try {
-    const summary = getSummary();
+    const summary = await getSummary();
     res.json({
       status: 200,
       message: 'get summary successful',

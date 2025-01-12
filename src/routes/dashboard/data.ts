@@ -213,16 +213,12 @@ function convertToSatPerByte(feeRateInBTCPerKB: number) {
 export async function getDifficultyData() {
   const difficulty = (await bitcoinRPC(['getdifficulty']))[0].result as number;
   const blockCount = (await bitcoinRPC(['getblockcount']))[0].result;
-  console.log('difficulty', difficulty);
-  console.log('blockCount', blockCount);
   const currentBlockHash = (
     await bitcoinRPC(['getblockhash'], [[blockCount]])
   )[0].result;
   const currentBlock = (await bitcoinRPC(['getblock'], [[currentBlockHash]]))[0]
     .result;
-  console.log('current block', currentBlock);
   const currentBlockTime = currentBlock.time as number;
-  console.log('current block time', currentBlockTime);
 
   return toDifficultyData(difficulty, blockCount, currentBlockTime);
 }
@@ -234,6 +230,8 @@ function toDifficultyData(
 ) {
   const blocksToRetarget = 2016 - Math.floor(blockCount % 2016);
   const estimatedAdjustment = currentBlockTime + 600 * blocksToRetarget;
+  console.log('currentblocktime', currentBlockTime);
+  console.log('estimated adjustment', estimatedAdjustment);
 
   const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',

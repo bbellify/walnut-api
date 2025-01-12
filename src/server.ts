@@ -4,7 +4,7 @@ import cors from 'cors';
 import SSE from './sse';
 
 dotenv.config();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
 const server: Express = express();
 server.use(express.json());
@@ -29,4 +29,6 @@ server.get('/', (_req: Request, res: Response) => {
   res.send('OK');
 });
 
-server.listen(PORT, () => console.log(`Walnut API running on port ${PORT}`));
+server.listen(PORT, '0.0.0.0', () =>
+  console.log(`Walnut API running on port ${PORT}`)
+);

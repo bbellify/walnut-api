@@ -224,7 +224,7 @@ export async function getDifficultyData() {
     .result;
   const currentBlockTime = currentBlock.time as number;
 
-  const lastRetargetHeight = blockCount - (blockCount % blocksPerRetarget);
+  const lastRetargetHeight = Math.floor(blockCount / 2016) * 2016;
   const lastRetargetBlockHash = (
     await bitcoinRPC(['getblockhash'], [[lastRetargetHeight]])
   )[0].result;
@@ -252,66 +252,12 @@ export async function getDifficultyData() {
         lastRetargetBlockDifficulty
     ) * 100;
 
-  console.log(
-    'testing standalone',
-    await estimateBitcoinDifficultyAdjustment()
-  );
   return toDifficultyData(
     difficulty,
     blockCount,
     currentBlockTime,
     percentageChange
   );
-}
-
-async function estimateBitcoinDifficultyAdjustment(): Promise<number> {
-  const blockCount = (await bitcoinRPC(['getblockcount']))[0].result;
-  const currentBlockHash = (
-    await bitcoinRPC(['getblockhash'], [[blockCount]])
-  )[0].result;
-  const currentBlock = (await bitcoinRPC(['getblock'], [[currentBlockHash]]))[0]
-    .result;
-  const currentBlockTime = currentBlock.time as number;
-
-  const lastRetargetHeight = blockCount - (blockCount % blocksPerRetarget);
-  const lastRetargetBlockHash = (
-    await bitcoinRPC(['getblockhash'], [[lastRetargetHeight]])
-  )[0].result;
-  const lastRetargetBlock = (
-    await bitcoinRPC(['getblock'], [[lastRetargetBlockHash]])
-  )[0].result;
-  const lastRetargetBlockTime = lastRetargetBlock.time as number;
-  const lastRetargetBlockDifficulty = lastRetargetBlock.difficulty as number;
-
-  const targetTimeSpan = 1209600; // 2 weeks in seconds
-  const maxAdjustmentFactor = 4; // Bitcoin's maximum adjustment factor
-
-  // Calculate the actual time span between retargets
-  const actualTimeSpan = currentBlockTime - lastRetargetBlockTime;
-
-  // Ensure actualTimeSpan is positive
-  if (actualTimeSpan <= 0) {
-    throw new Error(
-      'Invalid block times: actualTimeSpan must be greater than 0.'
-    );
-  }
-
-  // Calculate the adjustment factor, clamped within the max adjustment range
-  const adjustmentFactor = Math.min(
-    maxAdjustmentFactor,
-    Math.max(1 / maxAdjustmentFactor, targetTimeSpan / actualTimeSpan)
-  );
-
-  // Calculate the new difficulty
-  const newDifficulty = lastRetargetBlockDifficulty * adjustmentFactor;
-
-  // Calculate the percentage change relative to the last difficulty
-  const percentageChange =
-    ((newDifficulty - lastRetargetBlockDifficulty) /
-      lastRetargetBlockDifficulty) *
-    100;
-
-  return percentageChange;
 }
 
 function toDifficultyData(

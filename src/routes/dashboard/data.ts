@@ -215,10 +215,12 @@ export async function getDifficultyData() {
   const blockCount = (await bitcoinRPC(['getblockcount']))[0].result;
   console.log('difficulty', difficulty);
   console.log('blockCount', blockCount);
-  const currentBlockHash = (await bitcoinRPC(['getblockhash'], [blockCount]))[0]
+  const currentBlockHash = (
+    await bitcoinRPC(['getblockhash'], [[blockCount]])
+  )[0].result;
+  const currentBlock = (await bitcoinRPC(['getblock'], [[currentBlockHash]]))[0]
     .result;
-  const currentBlock = (await bitcoinRPC(['getblock'], [currentBlockHash]))[0]
-    .result;
+  console.log('current block', currentBlock);
   const currentBlockTime = currentBlock.time as number;
   console.log('current block time', currentBlockTime);
 

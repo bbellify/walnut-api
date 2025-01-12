@@ -130,12 +130,45 @@ export async function getSystemStatus() {
 }
 
 export async function getSummary() {
-  const summary = await bitcoinRPC('getblockchaininfo');
-  console.log('summary', summary);
+  const summary: GetBlockChainInfoRPCResult = (
+    await bitcoinRPC('getblockchaininfo')
+  ).result;
+  return toSummary(summary);
+}
+
+function toSummary(summary: GetBlockChainInfoRPCResult) {
   return {
-    blockCount: '800,000',
-    networkConnections: '42',
-    syncStatus: 'synced',
-    blockchainSize: '750G'
+    blockCount: summary.blocks.toLocaleString(),
+    syncStatus: summary.verificationprogress.toFixed(0),
+    blockChainSize: formatBytesToGB(summary.size_on_disk) + 'G',
+    // get these from getnetworkinfo, maybe batch or just separate requests
+    connectionsOutbound: '10',
+    connectionsInbound: '15'
   };
 }
+
+function formatBytesToGB(bytes: number) {
+  const gigabytes = bytes / 1024 ** 3;
+  return gigabytes.toFixed(2);
+}
+
+type GetBlockChainInfoRPCResult = {
+  chain: string;
+  blocks: number;
+  headers: number;
+  bestblockhash: string;
+  difficulty: number;
+  time: number;
+  mediantime: number;
+  verificationprogress: number;
+  initialblockdownload: boolean;
+  chainwork: string;
+  size_on_disk: number;
+  pruned: boolean;
+  warnings: string[];
+};
+
+type GetNetworkInfoRPCResult = {
+  connections_in: number;
+  connections_out: number;
+};

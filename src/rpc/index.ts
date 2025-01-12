@@ -51,7 +51,7 @@ export async function bitcoinRPC(
     if (data.error) {
       throw new Error(`RPC error: ${data.error.message}`);
     }
-    return data.result;
+    return data;
   } catch (error) {
     // Handle fetch or parsing errors
     console.error('Fetch error:', error);

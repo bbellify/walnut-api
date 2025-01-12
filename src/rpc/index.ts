@@ -19,9 +19,9 @@ export async function bitcoinRPC(
   method: string,
   params?: string[]
 ): Promise<RPCResponse> {
-  let cookie: string;
+  let auth: string;
   try {
-    cookie = fs.readFileSync(COOKIE_PATH, 'utf8');
+    auth = fs.readFileSync(COOKIE_PATH).toString('base64');
   } catch (error) {
     throw new Error('Failed to read cookie file: ' + error.message);
   }
@@ -30,7 +30,7 @@ export async function bitcoinRPC(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Cookie: cookie
+      Authorization: `Basic ${auth}`
     },
     body: JSON.stringify({
       jsonrpc: '1.0',
@@ -51,9 +51,7 @@ export async function bitcoinRPC(
     if (data.error) {
       throw new Error(`RPC error: ${data.error.message}`);
     }
-
-    console.log('data', data);
-    return data;
+    return data.result;
   } catch (error) {
     // Handle fetch or parsing errors
     console.error('Fetch error:', error);

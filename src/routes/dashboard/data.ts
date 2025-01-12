@@ -129,8 +129,8 @@ export async function getSystemStatus() {
   };
 }
 
-export function getSummary() {
-  const summary = bitcoinRPC('getblockchaininfo');
+export async function getSummary() {
+  const summary = await bitcoinRPC('getblockchaininfo');
   console.log('summary', summary);
   return {
     blockCount: '800,000',

@@ -17,7 +17,7 @@ type RPCResponse = {
 
 export async function bitcoinRPC(
   methods: string[],
-  params?: string[]
+  params?: any[]
 ): Promise<RPCResponse[]> {
   let auth: string;
   try {
@@ -38,7 +38,7 @@ export async function bitcoinRPC(
           jsonrpc: '1.0',
           id: 'node-fetch',
           method: m,
-          params: params && params[i] ? params[i] : null
+          params: params && params[i] ? params[i].split(',') : null
         };
       })
     )

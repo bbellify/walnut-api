@@ -231,6 +231,7 @@ export async function getDifficultyData() {
   const lastRetargetBlock = (
     await bitcoinRPC(['getblock'], [[lastRetargetBlockHash]])
   )[0].result;
+
   const lastRetargetBlockTime = lastRetargetBlock.time as number;
   const lastRetargetBlockDifficulty = lastRetargetBlock.difficulty as number;
   const actualReadjustmentTime = currentBlockTime - lastRetargetBlockTime;
@@ -246,10 +247,9 @@ export async function getDifficultyData() {
   const newDifficulty = lastRetargetBlockDifficulty * adjustmentFactor;
 
   const percentageChange =
-    Math.abs(
-      (newDifficulty - lastRetargetBlockDifficulty) /
-        lastRetargetBlockDifficulty
-    ) * 100;
+    ((newDifficulty - lastRetargetBlockDifficulty) /
+      lastRetargetBlockDifficulty) *
+    100;
 
   return toDifficultyData(
     difficulty,

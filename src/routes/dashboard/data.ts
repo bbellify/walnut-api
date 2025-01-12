@@ -177,7 +177,7 @@ export async function getFeeData() {
       'estimatesmartfee',
       'estimatesmartfee'
     ],
-    [1, 6, 144, 1008]
+    [[1], [6], [144], [1008]]
   );
   console.log('fees in getfee', fees);
 }

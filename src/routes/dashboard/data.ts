@@ -255,7 +255,7 @@ export async function getDifficultyData() {
     difficulty,
     blockCount,
     currentBlockTime,
-    actualReadjustmentTime
+    percentageChange
   );
 }
 

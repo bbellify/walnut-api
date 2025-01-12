@@ -1,37 +1,45 @@
 import express, { Request, Response, Router } from 'express';
 import dotenv from 'dotenv';
+import SSE from '../../sse';
+import { dataString, getSummary, getSystemStatus } from './data';
 
 // TODO: any
-const fetch = (url: string, options?: any) =>
-  import('node-fetch').then(({ default: fetch }) => fetch(url, options));
+// const fetch = (url: string, options?: any) =>
+//   import('node-fetch').then(({ default: fetch }) => fetch(url, options));
 
-dotenv.config();
 const router: Router = express.Router();
 
+dotenv.config();
 const RPC_URL = process.env.RPC_URL as string;
 
-function dataString(method: string, params?: string[]): string {
-  // TODO: method should be type that has method name and id
-  return JSON.stringify({
-    jsonrpc: '1.0',
-    id: 'curltext',
-    method: method,
-    params: params ?? []
+router.get('/status', async (_req: Request, res: Response) => {
+  try {
+    const systemStatus = await getSystemStatus();
+
+    res.json({
+      status: 200,
+      message: 'get system status successful',
+      type: 'systemStatus',
+      data: systemStatus,
+      errors: null
+    });
+  } catch {
+    res.json({
+      status: 500,
+      error: 'Server error'
+    });
+  }
+});
+
+setInterval(async () => {
+  SSE.sendUpdate({
+    update: {
+      type: 'systemStatus',
+      data: await getSystemStatus(),
+      timestamp: new Date().toISOString()
+    }
   });
-}
-
-function getSummary() {
-  return {
-    blockCount: '800,000',
-    price: '$100,000',
-    marketCap: '1T',
-    networkConnections: '42',
-    syncStatus: 'synced',
-    blockchainSize: '750G'
-  };
-}
-
-router.get('/', (_req: Request, res: Response) => res.send('/rpc OK'));
+}, 10000);
 
 router.get('/summary', (_req: Request, res: Response) => {
   try {

@@ -140,7 +140,7 @@ function toSummary(summary: GetBlockChainInfoRPCResult) {
   return {
     blockCount: summary.blocks.toLocaleString(),
     syncStatus: summary.verificationprogress.toFixed(0),
-    blockChainSize: formatBytesToGB(summary.size_on_disk) + 'G',
+    blockchainSize: formatBytesToGB(summary.size_on_disk) + ' GB',
     // get these from getnetworkinfo, maybe batch or just separate requests
     connectionsOutbound: '10',
     connectionsInbound: '15'
@@ -148,7 +148,7 @@ function toSummary(summary: GetBlockChainInfoRPCResult) {
 }
 
 function formatBytesToGB(bytes: number) {
-  const gigabytes = bytes / 1024 ** 3;
+  const gigabytes = bytes / 1000 ** 3;
   return gigabytes.toFixed(2);
 }
 

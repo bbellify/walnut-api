@@ -247,8 +247,8 @@ export async function getDifficultyData() {
   console.log('difficulties current and new', difficulty, newDifficulty);
   const percentageChange =
     Math.abs(
-      (newDifficulty - lastRetargetBlock.difficulty) /
-        lastRetargetBlock.difficulty
+      (newDifficulty - lastRetargetBlockDifficulty) /
+        lastRetargetBlockDifficulty
     ) * 100;
   console.log('percentage change', percentageChange);
 

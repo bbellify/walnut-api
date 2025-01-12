@@ -20,7 +20,36 @@ function dataString(method: string, params?: string[]): string {
   });
 }
 
+function getSummary() {
+  return {
+    blockCount: '800,000',
+    price: '$100,000',
+    marketCap: '1T',
+    networkConnections: '42',
+    syncStatus: 'synced',
+    blockchainSize: '750G'
+  };
+}
+
 router.get('/', (_req: Request, res: Response) => res.send('/rpc OK'));
+
+router.get('/summary', (_req: Request, res: Response) => {
+  try {
+    const summary = getSummary();
+    res.json({
+      status: 200,
+      message: 'get summary successful',
+      data: summary,
+      type: 'summary',
+      errors: null
+    });
+  } catch {
+    res.json({
+      status: 500,
+      error: 'Server error'
+    });
+  }
+});
 
 router.get('/getblockcount', async (_req: Request, res: Response) => {
   const options = {

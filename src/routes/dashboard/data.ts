@@ -179,16 +179,37 @@ export async function getFeeData() {
     ],
     [[1], [6], [144], [1008]]
   );
-  console.log('fees in getfee', fees);
+  return toFeeData(
+    fees.map((fee) => {
+      return fee.error
+        ? {
+            feerate: ''
+          }
+        : fee.result;
+    })
+  );
 }
 
 function toFeeData(fees: GetFeesRPCResult[]) {
   return {
-    immediate: '1',
-    hour: '2',
-    day: '3',
-    week: '4'
+    immediate: fees[0].feerate
+      ? convertToSatPerByte(fees[0].feerate).toString()
+      : '--',
+    hour: fees[1].feerate
+      ? convertToSatPerByte(fees[1].feerate).toString()
+      : '--',
+    day: fees[2].feerate
+      ? convertToSatPerByte(fees[2].feerate).toString()
+      : '--',
+    week: fees[3].feerate
+      ? convertToSatPerByte(fees[3].feerate).toString()
+      : '--'
   };
+}
+
+function convertToSatPerByte(feeRateInBTCPerKB: number) {
+  // 1 BTC = 100,000,000 satoshis, 1 kB = 1024 bytes
+  return Math.round((feeRateInBTCPerKB * 100000000) / 1024);
 }
 
 type GetBlockChainInfoRPCResult = {

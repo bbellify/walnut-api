@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from 'express';
 import dotenv from 'dotenv';
 import SSE from '../../sse';
-import { getSummary, getSystemStatus, getPriceData } from './data';
+import { getSummary, getSystemStatus, getPriceData, getFeeData } from './data';
 
 const router: Router = express.Router();
 
@@ -94,24 +94,24 @@ router.get('/price', async (_req: Request, res: Response) => {
 //   const mempool = await getMempool()
 // })
 
-// router.get('/fees', async (_req: Request, res: Response) => {
-//   try {
-//     const feeData = await getFeeData();
-//     res.json({
-//       status: 200,
-//       message: 'get fees successful',
-//       data: feeData,
-//       type: 'summary',
-//       errors: null
-//     });
-//   } catch {
-//     res.json({
-//       status: 500,
-//       type: 'fees',
-//       error: 'Server error'
-//     });
-//   }
-// });
+router.get('/fees', async (_req: Request, res: Response) => {
+  try {
+    const feeData = await getFeeData();
+    res.json({
+      status: 200,
+      message: 'get fees successful',
+      data: feeData,
+      type: 'summary',
+      errors: null
+    });
+  } catch {
+    res.json({
+      status: 500,
+      type: 'fees',
+      error: 'Server error'
+    });
+  }
+});
 
 setInterval(async () => {
   const priceData = await getPriceData();

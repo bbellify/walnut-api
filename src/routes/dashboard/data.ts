@@ -170,7 +170,25 @@ function formatBytesToGB(bytes: number) {
 }
 
 export async function getFeeData() {
-  // const feeData: Get
+  const fees = await bitcoinRPC(
+    [
+      'estimatesmartfee',
+      'estimatesmartfee',
+      'estimatesmartfee',
+      'estimatesmartfee'
+    ],
+    ['1', '6', '144', '1008']
+  );
+  console.log('fees in getfee', fees);
+}
+
+function toFeeData(fees: GetFeesRPCResult[]) {
+  return {
+    immediate: '1',
+    hour: '2',
+    day: '3',
+    week: '4'
+  };
 }
 
 type GetBlockChainInfoRPCResult = {
@@ -198,4 +216,8 @@ type GetMempoolRPCResult = {
   size: number;
   bytes: number;
   mempoolminfee: number;
+};
+
+type GetFeesRPCResult = {
+  feerate: number;
 };

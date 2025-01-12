@@ -234,6 +234,7 @@ export async function getDifficultyData() {
   const lastRetargetBlockTime = lastRetargetBlock.time as number;
   const lastRetargetBlockDifficulty = lastRetargetBlock.difficulty as number;
   const actualReadjustmentTime = currentBlockTime - lastRetargetBlockTime;
+  console.log('actualyReadjustmentTIme', actualReadjustmentTime);
 
   const adjustmentFactor = Math.min(
     maxAdjustmentFactor,
@@ -242,15 +243,14 @@ export async function getDifficultyData() {
       expectedAdjustmentTime / actualReadjustmentTime
     )
   );
-  console.log('adjustment factor', adjustmentFactor);
+
   const newDifficulty = lastRetargetBlockDifficulty * adjustmentFactor;
-  console.log('difficulties current and new', difficulty, newDifficulty);
+
   const percentageChange =
     Math.abs(
       (newDifficulty - lastRetargetBlockDifficulty) /
         lastRetargetBlockDifficulty
     ) * 100;
-  console.log('percentage change', percentageChange);
 
   return toDifficultyData(
     difficulty,

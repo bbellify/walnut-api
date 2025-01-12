@@ -1,7 +1,13 @@
 import express, { Request, Response, Router } from 'express';
 import dotenv from 'dotenv';
 import SSE from '../../sse';
-import { getSummary, getSystemStatus, getPriceData, getFeeData } from './data';
+import {
+  getSummary,
+  getSystemStatus,
+  getPriceData,
+  getFeeData,
+  getDifficultyData
+} from './data';
 
 const router: Router = express.Router();
 
@@ -108,6 +114,25 @@ router.get('/fees', async (_req: Request, res: Response) => {
     res.json({
       status: 500,
       type: 'fees',
+      error: 'Server error'
+    });
+  }
+});
+
+router.get('/difficulty', async (_req: Request, res: Response) => {
+  try {
+    const difficultyData = await getDifficultyData();
+    res.json({
+      status: 200,
+      message: 'get difficulty successful',
+      data: difficultyData,
+      type: 'difficulty',
+      errors: null
+    });
+  } catch {
+    res.json({
+      status: 500,
+      type: 'difficulty',
       error: 'Server error'
     });
   }

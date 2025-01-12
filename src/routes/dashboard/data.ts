@@ -210,6 +210,15 @@ function convertToSatPerByte(feeRateInBTCPerKB: number) {
   return Math.ceil((feeRateInBTCPerKB * 100000000) / 1024);
 }
 
+export async function getDifficultyData() {
+  const difficulty = (await bitcoinRPC(['getdifficulty']))[0].result;
+  const blockCount = (await bitcoinRPC(['getblockcount']))[0].result;
+  console.log('difficulty', difficulty);
+  console.log('blockCount', blockCount);
+  // const currentBlockHash = (await bitcoinRPC(['getblockhash'],[]))[0].result;
+  // get blockheight from results, get that block
+}
+
 type GetBlockChainInfoRPCResult = {
   chain: string;
   blocks: number;

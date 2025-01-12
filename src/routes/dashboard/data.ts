@@ -1,7 +1,8 @@
 import fetch from 'node-fetch';
+import dotenv from 'dotenv';
+import { bitcoinRPC } from '../../rpc';
 import { cpuTemperature, mem, currentLoad, time } from 'systeminformation';
 import { secondsToTime, celciusToFahrenheit } from '../../util';
-import dotenv from 'dotenv';
 
 dotenv.config();
 const COIN_GECKO_API_KEY = process.env.COIN_GECKO_API_KEY as string;
@@ -45,7 +46,6 @@ export async function getPriceData(): Promise<PriceData | object> {
       const marketData = response.market_data;
       if (marketData) {
         const priceData = toPriceData(marketData);
-        console.log('priceData', priceData);
         return priceData;
       }
       return {};
@@ -129,17 +129,9 @@ export async function getSystemStatus() {
   };
 }
 
-export function dataString(method: string, params?: string[]): string {
-  // TODO: method should be type that has method name and id
-  return JSON.stringify({
-    jsonrpc: '1.0',
-    id: 'curltext',
-    method: method,
-    params: params ?? []
-  });
-}
-
 export function getSummary() {
+  const summary = bitcoinRPC('getblockchaininfo');
+  console.log('summary', summary);
   return {
     blockCount: '800,000',
     networkConnections: '42',

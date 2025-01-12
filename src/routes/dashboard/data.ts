@@ -230,9 +230,9 @@ function toDifficultyData(
 ) {
   // const lastRetargetHeight = blockCount - Math.floor(blockCount % 2016)
   const blocksToRetarget = 2016 - Math.floor(blockCount % 2016);
-  const estimatedAdjustment = 600 * blocksToRetarget + currentBlockTime * 1000; // convert seconds to ms
-  console.log('currentblocktime', currentBlockTime);
-  console.log('estimated adjustment', estimatedAdjustment);
+  const secondsUntilRetarget = blocksToRetarget * 600; // seconds/block
+  const estimatedTimeStamp = currentBlockTime + secondsUntilRetarget;
+  console.log('estimated timestampe', estimatedTimeStamp);
 
   const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',
@@ -243,7 +243,7 @@ function toDifficultyData(
   return {
     difficulty: formatScientificNotation(difficulty),
     blocksToRetarget: blocksToRetarget.toString(),
-    retargetDate: new Date(estimatedAdjustment).toLocaleDateString(
+    retargetDate: new Date(estimatedTimeStamp * 1000).toLocaleDateString(
       'en-US',
       options
     ),

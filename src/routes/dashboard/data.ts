@@ -228,7 +228,26 @@ export async function getDifficultyData() {
     await bitcoinRPC(['getblock'], [[lastRetargetBlockHash]])
   )[0].result;
   const lastRetargetBlockTime = lastRetargetBlock.time as number;
+  const lastRetargetBlockDifficulty = lastRetargetBlock.difficulty as number;
   const actualReadjustmentTime = currentBlockTime - lastRetargetBlockTime;
+
+  const expectedAdjustmentTime = 1209600;
+  const maxAdjustmentFactor = 4;
+  let newDifficulty =
+    lastRetargetBlockDifficulty *
+    (expectedAdjustmentTime / actualReadjustmentTime);
+  const adjustmentFactor = Math.min(
+    maxAdjustmentFactor,
+    Math.max(
+      1 / maxAdjustmentFactor,
+      expectedAdjustmentTime / actualReadjustmentTime
+    )
+  );
+  newDifficulty = lastRetargetBlock.difficulty * adjustmentFactor;
+  const percentageChange = Math.abs(
+    ((newDifficulty - currentBlock.difficulty) / currentBlock.difficulty) * 100
+  );
+  console.log('percentage change', percentageChange);
 
   return toDifficultyData(
     difficulty,
@@ -242,14 +261,11 @@ function toDifficultyData(
   difficulty: number,
   blockCount: number,
   currentBlockTime: number,
-  actualReadjustmentTime: number
+  percentageChange: number
 ) {
   const blocksToRetarget = 2016 - Math.floor(blockCount % 2016);
   const secondsUntilRetarget = blocksToRetarget * 600; // seconds/block
   const estimatedTimeStamp = currentBlockTime + secondsUntilRetarget;
-
-  const expectedAdjustmentTime = 1209600;
-  const estimatedAdjustment = expectedAdjustmentTime / actualReadjustmentTime;
 
   const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',
@@ -264,7 +280,7 @@ function toDifficultyData(
       'en-US',
       options
     ),
-    estimatedAdjustment: estimatedAdjustment.toFixed(2) + '%'
+    estimatedAdjustment: percentageChange.toFixed(2) + '%'
   };
 }
 

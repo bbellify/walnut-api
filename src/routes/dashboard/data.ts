@@ -14,6 +14,10 @@ const options = {
     'x-cg-demo-api-key': COIN_GECKO_API_KEY
   }
 };
+const expectedAdjustmentTime = 1209600;
+const maxAdjustmentFactor = 4;
+const blocksPerRetarget = 2016;
+const secondsPerBlock = 600;
 
 type MarketData = {
   current_price: {
@@ -220,7 +224,7 @@ export async function getDifficultyData() {
     .result;
   const currentBlockTime = currentBlock.time as number;
 
-  const lastRetargetHeight = blockCount - Math.floor(blockCount % 2016);
+  const lastRetargetHeight = blockCount - (blockCount % blocksPerRetarget);
   const lastRetargetBlockHash = (
     await bitcoinRPC(['getblockhash'], [[lastRetargetHeight]])
   )[0].result;
@@ -231,8 +235,6 @@ export async function getDifficultyData() {
   const lastRetargetBlockDifficulty = lastRetargetBlock.difficulty as number;
   const actualReadjustmentTime = currentBlockTime - lastRetargetBlockTime;
 
-  const expectedAdjustmentTime = 1209600;
-  const maxAdjustmentFactor = 4;
   let newDifficulty =
     lastRetargetBlockDifficulty *
     (expectedAdjustmentTime / actualReadjustmentTime);
@@ -243,9 +245,9 @@ export async function getDifficultyData() {
       expectedAdjustmentTime / actualReadjustmentTime
     )
   );
-  newDifficulty = lastRetargetBlock.difficulty * adjustmentFactor;
+  newDifficulty = lastRetargetBlockDifficulty * adjustmentFactor;
   const percentageChange = Math.abs(
-    ((newDifficulty - currentBlock.difficulty) / currentBlock.difficulty) * 100
+    ((newDifficulty - difficulty) / difficulty) * 100
   );
   console.log('percentage change', percentageChange);
 
@@ -263,8 +265,9 @@ function toDifficultyData(
   currentBlockTime: number,
   percentageChange: number
 ) {
-  const blocksToRetarget = 2016 - Math.floor(blockCount % 2016);
-  const secondsUntilRetarget = blocksToRetarget * 600; // seconds/block
+  const blocksToRetarget =
+    blocksPerRetarget - Math.floor(blockCount % blocksPerRetarget);
+  const secondsUntilRetarget = blocksToRetarget * secondsPerBlock;
   const estimatedTimeStamp = currentBlockTime + secondsUntilRetarget;
 
   const options: Intl.DateTimeFormatOptions = {

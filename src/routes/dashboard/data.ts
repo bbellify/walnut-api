@@ -217,17 +217,35 @@ export async function getDifficultyData() {
   console.log('blockCount', blockCount);
   const currentBlockHash = (await bitcoinRPC(['getblockhash'], [blockCount]))[0]
     .result;
-  const currentBlock = await bitcoinRPC(['getblock'], [currentBlockHash]);
-  // get blockheight from results, get that block
+  const currentBlock = (await bitcoinRPC(['getblock'], [currentBlockHash]))[0]
+    .result;
+  const currentBlockTime = currentBlock.time as number;
+  console.log('current block time', currentBlockTime);
 
-  return toDifficultyData(difficulty, blockCount);
+  return toDifficultyData(difficulty, blockCount, currentBlockTime);
 }
 
-function toDifficultyData(difficulty: number, blockCount: number) {
+function toDifficultyData(
+  difficulty: number,
+  blockCount: number,
+  currentBlockTime: number
+) {
+  const blocksToRetarget = 2016 - Math.floor(blockCount % 2016);
+  const estimatedAdjustment = currentBlockTime + 600 * blocksToRetarget;
+
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  };
+
   return {
     difficulty: formatScientificNotation(difficulty),
-    blocksToRetarget: (2016 - Math.floor(blockCount % 2016)).toString(),
-    retargetDate: 'date',
+    blocksToRetarget: blocksToRetarget.toString(),
+    retargetDate: new Date(estimatedAdjustment).toLocaleDateString(
+      'en-US',
+      options
+    ),
     estimatedAdjustment: 'percent'
   };
 }
@@ -238,11 +256,16 @@ function formatScientificNotation(number: number): string {
 
   // Split the scientific notation into parts
   const parts = scientific.split('e');
-  const coefficient = parseFloat(parts[0]).toFixed(2); // Keep 2 decimal places for coefficient
-  const exponent = parseInt(parts[1]);
+  let coefficient = parseFloat(parts[0]);
+  let exponent = parseInt(parts[1]);
 
-  // Format the coefficient and exponent
-  const formattedCoefficient = coefficient.replace(/\.0+$/, ''); // Remove trailing .00 if present for whole numbers
+  // Adjust coefficient and exponent to keep the number in hundreds
+  exponent -= 2; // Decrease exponent by 2
+  coefficient *= 100; // Increase coefficient by 100 to compensate
+
+  // Format the coefficient to 3 significant figures for consistency
+  const formattedCoefficient = coefficient.toPrecision(6).replace(/\.0+$/, ''); // Remove trailing .00 if present for whole numbers
+
   const sign = exponent < 0 ? '-' : '';
   const absExponent = Math.abs(exponent);
 
@@ -251,7 +274,6 @@ function formatScientificNotation(number: number): string {
     .toString()
     .split('')
     .map((char) => {
-      // Convert each digit to its Unicode superscript equivalent
       switch (char) {
         case '0':
           return '⁰';
@@ -274,7 +296,7 @@ function formatScientificNotation(number: number): string {
         case '9':
           return '⁹';
         default:
-          return char; // This case shouldn't happen with digits
+          return char;
       }
     })
     .join('');

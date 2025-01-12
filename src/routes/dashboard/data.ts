@@ -211,12 +211,76 @@ function convertToSatPerByte(feeRateInBTCPerKB: number) {
 }
 
 export async function getDifficultyData() {
-  const difficulty = (await bitcoinRPC(['getdifficulty']))[0].result;
+  const difficulty = (await bitcoinRPC(['getdifficulty']))[0].result as number;
   const blockCount = (await bitcoinRPC(['getblockcount']))[0].result;
   console.log('difficulty', difficulty);
   console.log('blockCount', blockCount);
-  // const currentBlockHash = (await bitcoinRPC(['getblockhash'],[]))[0].result;
+  const currentBlockHash = (await bitcoinRPC(['getblockhash'], [blockCount]))[0]
+    .result;
+  const currentBlock = await bitcoinRPC(['getblock'], [currentBlockHash]);
   // get blockheight from results, get that block
+
+  return toDifficultyData(difficulty, blockCount);
+}
+
+function toDifficultyData(difficulty: number, blockCount: number) {
+  return {
+    difficulty: formatScientificNotation(difficulty),
+    blocksToRetarget: (2016 - Math.floor(blockCount % 2016)).toString(),
+    retargetDate: 'date',
+    estimatedAdjustment: 'percent'
+  };
+}
+
+function formatScientificNotation(number: number): string {
+  // Convert the number to its scientific notation form
+  const scientific = number.toExponential();
+
+  // Split the scientific notation into parts
+  const parts = scientific.split('e');
+  const coefficient = parseFloat(parts[0]).toFixed(2); // Keep 2 decimal places for coefficient
+  const exponent = parseInt(parts[1]);
+
+  // Format the coefficient and exponent
+  const formattedCoefficient = coefficient.replace(/\.0+$/, ''); // Remove trailing .00 if present for whole numbers
+  const sign = exponent < 0 ? '-' : '';
+  const absExponent = Math.abs(exponent);
+
+  // Create superscript for the exponent
+  const superscript = absExponent
+    .toString()
+    .split('')
+    .map((char) => {
+      // Convert each digit to its Unicode superscript equivalent
+      switch (char) {
+        case '0':
+          return '⁰';
+        case '1':
+          return '¹';
+        case '2':
+          return '²';
+        case '3':
+          return '³';
+        case '4':
+          return '⁴';
+        case '5':
+          return '⁵';
+        case '6':
+          return '⁶';
+        case '7':
+          return '⁷';
+        case '8':
+          return '⁸';
+        case '9':
+          return '⁹';
+        default:
+          return char; // This case shouldn't happen with digits
+      }
+    })
+    .join('');
+
+  // Combine everything into the desired format
+  return `${formattedCoefficient}×10${sign}${superscript}`;
 }
 
 type GetBlockChainInfoRPCResult = {

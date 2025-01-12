@@ -111,6 +111,22 @@ function formatLargeNumber(number: number): string {
   }
 }
 
+export async function getMempool() {
+  const mempool: GetMempoolRPCResult = (await bitcoinRPC(['getmempoolinfo']))
+    .result;
+  console.log('result in mempool', mempool);
+  return toMempool(mempool);
+}
+
+function toMempool(mempool: GetMempoolRPCResult) {
+  return {
+    numberOfTxs: mempool.size.toFixed(0),
+    minimumFee: mempool.mempoolminfee,
+    // need more info for blocksToClear
+    blocksToClear: '5'
+  };
+}
+
 export async function getSystemStatus() {
   const uptime = time();
   const memory = await mem();
@@ -131,15 +147,16 @@ export async function getSystemStatus() {
 
 export async function getSummary() {
   const summary: GetBlockChainInfoRPCResult = (
-    await bitcoinRPC('getblockchaininfo')
+    await bitcoinRPC(['getblockchaininfo'])
   ).result;
+  console.log('result in summary', summary);
   return toSummary(summary);
 }
 
 function toSummary(summary: GetBlockChainInfoRPCResult) {
   return {
     blockCount: summary.blocks.toLocaleString(),
-    syncStatus: summary.verificationprogress.toFixed(0),
+    syncStatus: (summary.verificationprogress * 100).toFixed(0) + '%',
     blockchainSize: formatBytesToGB(summary.size_on_disk) + ' GB',
     // get these from getnetworkinfo, maybe batch or just separate requests
     connectionsOutbound: '10',
@@ -149,7 +166,11 @@ function toSummary(summary: GetBlockChainInfoRPCResult) {
 
 function formatBytesToGB(bytes: number) {
   const gigabytes = bytes / 1000 ** 3;
-  return gigabytes.toFixed(2);
+  return gigabytes.toFixed(1);
+}
+
+export async function getFeeData() {
+  // const feeData: Get
 }
 
 type GetBlockChainInfoRPCResult = {
@@ -171,4 +192,10 @@ type GetBlockChainInfoRPCResult = {
 type GetNetworkInfoRPCResult = {
   connections_in: number;
   connections_out: number;
+};
+
+type GetMempoolRPCResult = {
+  size: number;
+  bytes: number;
+  mempoolminfee: number;
 };

@@ -27,6 +27,7 @@ router.get('/status', async (_req: Request, res: Response) => {
   } catch {
     res.json({
       status: 500,
+      type: 'systemStatus',
       error: 'Server error'
     });
   }
@@ -55,6 +56,7 @@ router.get('/summary', async (_req: Request, res: Response) => {
   } catch {
     res.json({
       status: 500,
+      type: 'summary',
       error: 'Server error'
     });
   }
@@ -74,16 +76,42 @@ router.get('/price', async (_req: Request, res: Response) => {
     } else {
       res.json({
         status: 500,
-        error: 'Server error'
+        type: 'price',
+        error: 'external API request error'
       });
     }
   } catch {
     res.json({
       status: 500,
+      type: 'price',
       error: 'Server error'
     });
   }
 });
+
+// router.get('/mempool', async (_req: Request, res: Response) => {
+//   console.log("in mempool")
+//   const mempool = await getMempool()
+// })
+
+// router.get('/fees', async (_req: Request, res: Response) => {
+//   try {
+//     const feeData = await getFeeData();
+//     res.json({
+//       status: 200,
+//       message: 'get fees successful',
+//       data: feeData,
+//       type: 'summary',
+//       errors: null
+//     });
+//   } catch {
+//     res.json({
+//       status: 500,
+//       type: 'fees',
+//       error: 'Server error'
+//     });
+//   }
+// });
 
 setInterval(async () => {
   const priceData = await getPriceData();

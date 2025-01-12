@@ -112,7 +112,7 @@ function formatLargeNumber(number: number): string {
 }
 
 export async function getMempool() {
-  const mempool: GetMempoolRPCResult = (await bitcoinRPC(['getmempoolinfo']))
+  const mempool: GetMempoolRPCResult = (await bitcoinRPC(['getmempoolinfo']))[0]
     .result;
   console.log('result in mempool', mempool);
   return toMempool(mempool);
@@ -148,7 +148,7 @@ export async function getSystemStatus() {
 export async function getSummary() {
   const summary: GetBlockChainInfoRPCResult = (
     await bitcoinRPC(['getblockchaininfo'])
-  ).result;
+  )[0].result;
   console.log('result in summary', summary);
   return toSummary(summary);
 }

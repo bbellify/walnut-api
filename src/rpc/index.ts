@@ -18,7 +18,7 @@ type RPCResponse = {
 export async function bitcoinRPC(
   methods: string[],
   params?: string[]
-): Promise<RPCResponse> {
+): Promise<RPCResponse[]> {
   let auth: string;
   try {
     auth = fs.readFileSync(COOKIE_PATH).toString('base64');
@@ -49,14 +49,8 @@ export async function bitcoinRPC(
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data = (await response.json()) as RPCResponse;
-    console.log('data in btcrpc', data);
-
-    // Error from Bitcoin Core RPC
-    if (data.error) {
-      throw new Error(`RPC error: ${data.error.message}`);
-    }
-    return data;
+    const data = await response.json();
+    return data as RPCResponse[];
   } catch (error) {
     // Handle fetch or parsing errors
     console.error('Fetch error:', error);

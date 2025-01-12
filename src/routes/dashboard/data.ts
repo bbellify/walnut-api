@@ -220,19 +220,36 @@ export async function getDifficultyData() {
     .result;
   const currentBlockTime = currentBlock.time as number;
 
-  return toDifficultyData(difficulty, blockCount, currentBlockTime);
+  const lastRetargetHeight = blockCount - Math.floor(blockCount % 2016);
+  const lastRetargetBlockHash = (
+    await bitcoinRPC(['getblockhash'], [[lastRetargetHeight]])
+  )[0].result;
+  const lastRetargetBlock = (
+    await bitcoinRPC(['getblock'], [[lastRetargetBlockHash]])
+  )[0].result;
+  const lastRetargetBlockTime = lastRetargetBlock.time as number;
+  const actualReadjustmentTime = currentBlockTime - lastRetargetBlockTime;
+
+  return toDifficultyData(
+    difficulty,
+    blockCount,
+    currentBlockTime,
+    actualReadjustmentTime
+  );
 }
 
 function toDifficultyData(
   difficulty: number,
   blockCount: number,
-  currentBlockTime: number
+  currentBlockTime: number,
+  actualReadjustmentTime: number
 ) {
-  // const lastRetargetHeight = blockCount - Math.floor(blockCount % 2016)
   const blocksToRetarget = 2016 - Math.floor(blockCount % 2016);
   const secondsUntilRetarget = blocksToRetarget * 600; // seconds/block
   const estimatedTimeStamp = currentBlockTime + secondsUntilRetarget;
-  console.log('estimated timestampe', estimatedTimeStamp);
+
+  const expectedAdjustmentTime = 1209600;
+  const estimatedAdjustment = expectedAdjustmentTime / actualReadjustmentTime;
 
   const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',
@@ -247,7 +264,7 @@ function toDifficultyData(
       'en-US',
       options
     ),
-    estimatedAdjustment: 'percent'
+    estimatedAdjustment: estimatedAdjustment.toFixed(2) + '%'
   };
 }
 

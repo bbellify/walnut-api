@@ -101,7 +101,7 @@ router.get('/fees', async (_req: Request, res: Response) => {
       status: 200,
       message: 'get fees successful',
       data: feeData,
-      type: 'summary',
+      type: 'fees',
       errors: null
     });
   } catch {

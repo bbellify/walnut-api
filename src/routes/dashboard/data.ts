@@ -114,7 +114,6 @@ function formatLargeNumber(number: number): string {
 export async function getMempool() {
   const mempool: GetMempoolRPCResult = (await bitcoinRPC(['getmempoolinfo']))[0]
     .result;
-  console.log('result in mempool', mempool);
   return toMempool(mempool);
 }
 
@@ -149,7 +148,6 @@ export async function getSummary() {
   const summary: GetBlockChainInfoRPCResult = (
     await bitcoinRPC(['getblockchaininfo'])
   )[0].result;
-  console.log('result in summary', summary);
   return toSummary(summary);
 }
 
@@ -193,23 +191,23 @@ export async function getFeeData() {
 function toFeeData(fees: GetFeesRPCResult[]) {
   return {
     immediate: fees[0].feerate
-      ? convertToSatPerByte(fees[0].feerate).toString()
+      ? convertToSatPerByte(fees[0].feerate) + ' sat/vB'
       : '--',
     hour: fees[1].feerate
-      ? convertToSatPerByte(fees[1].feerate).toString()
+      ? convertToSatPerByte(fees[1].feerate) + ' sat/vB'
       : '--',
     day: fees[2].feerate
-      ? convertToSatPerByte(fees[2].feerate).toString()
+      ? convertToSatPerByte(fees[2].feerate) + ' sat/vB'
       : '--',
     week: fees[3].feerate
-      ? convertToSatPerByte(fees[3].feerate).toString()
+      ? convertToSatPerByte(fees[3].feerate) + ' sat/vB'
       : '--'
   };
 }
 
 function convertToSatPerByte(feeRateInBTCPerKB: number) {
   // 1 BTC = 100,000,000 satoshis, 1 kB = 1024 bytes
-  return Math.round((feeRateInBTCPerKB * 100000000) / 1024);
+  return Math.ceil((feeRateInBTCPerKB * 100000000) / 1024);
 }
 
 type GetBlockChainInfoRPCResult = {

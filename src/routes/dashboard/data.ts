@@ -485,13 +485,12 @@ function toNextBlockData(
   return {
     transactions: transactions.toLocaleString(),
     reward: blockSubsidy.toFixed(3) + ' BTC',
-    output: totalOut,
-    totalFees: totalFees,
-    medianFee: totalFees / transactions
+    output: (+convertSatoshisToBTC(totalOut).toFixed(2)).toLocaleString(),
+    totalFees: (+convertSatoshisToBTC(totalFees).toFixed(2)).toLocaleString(),
+    medianFee: convertToSatPerByte(totalFees / transactions) + ' sat/vB'
   };
 }
 
-// transactions: string
-// output: string
-// reward: string
-// medianFee: string
+function convertSatoshisToBTC(sats: number): number {
+  return sats / 100000000;
+}

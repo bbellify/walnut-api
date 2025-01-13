@@ -9,7 +9,8 @@ import {
   NetworkInfo,
   MempoolInfo,
   CGMarketData,
-  CGPriceData
+  CGPriceData,
+  SystemStatus
 } from '../../rpc/types';
 
 dotenv.config();
@@ -126,7 +127,7 @@ function formatLargeNumber(number: number): string {
 //
 // System Status section
 //
-export async function getSystemStatusData() {
+export async function getSystemStatusData(): Promise<SystemStatus> {
   const uptime = time();
   const memory = await mem();
   const cpuUsage = await currentLoad();
@@ -496,4 +497,8 @@ function toNextBlockData(
 
 function convertSatoshisToBTC(sats: number): number {
   return sats / 100000000;
+}
+
+export async function getLatestBlocksData() {
+  // const blocksToGet = 10;
 }

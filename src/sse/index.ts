@@ -26,8 +26,7 @@ class SSEManager {
     return clientId;
   }
 
-  //   TODO this any will be replaced with some union at some point
-  public sendUpdate(data: any) {
+  public sendUpdate<T>(data: SSEUpdate<T>) {
     const dataString = JSON.stringify(data);
     for (const clientId in this.clients) {
       const client = this.clients[clientId];
@@ -40,13 +39,20 @@ class SSEManager {
     }
   }
 
-  //   TODO this any will be replaced with some union at some point
-  public sendUpdateToClient(clientId: string, data: any) {
+  public sendUpdateToClient<T>(clientId: string, data: SSEUpdate<T>) {
     const client = this.clients[clientId];
     if (client) {
       client.write(`data: ${JSON.stringify(data)}\n\n`);
     }
   }
 }
+
+type SSEUpdate<T> = {
+  update: {
+    type: string;
+    data: T;
+    timestamp: string;
+  };
+};
 
 export default new SSEManager();

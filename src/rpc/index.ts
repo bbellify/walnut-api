@@ -3,7 +3,7 @@ import fs from 'fs';
 import dotenv from 'dotenv';
 
 import {
-  RPCResponse_,
+  RPCResponse,
   BlockchainInfo,
   NetworkInfo,
   SmartFeeEstimate,
@@ -44,7 +44,10 @@ class RPCClient {
     }
   }
 
-  private async makeRequest<T>(method: string, params: any[] = []): Promise<T> {
+  private async makeRequest<T>(
+    method: string,
+    params: unknown[] = []
+  ): Promise<T> {
     const response = await fetch(this.url, {
       method: 'POST',
       headers: {
@@ -63,7 +66,7 @@ class RPCClient {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const json = (await response.json()) as RPCResponse_<T>;
+    const json = (await response.json()) as RPCResponse<T>;
     if (json.error) {
       throw new Error(`RPC error: ${json.error.message}`);
     }

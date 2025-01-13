@@ -1,4 +1,4 @@
-export type RPCResponse_<T> = {
+export type RPCResponse<T> = {
   result: T;
   error?: {
     message: string;
@@ -137,6 +137,14 @@ export type MempoolInfo = {
 };
 
 export type Difficulty = number;
+
+// System Status type
+export type SystemStatus = {
+  uptime: string;
+  cpuUsage: string;
+  memoryUsage: string;
+  temperature: string;
+};
 
 // CoinGecko API types
 export type CGMarketData = {

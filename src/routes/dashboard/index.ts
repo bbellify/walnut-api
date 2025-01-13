@@ -9,8 +9,10 @@ import {
   getMiningData,
   getMempoolData,
   getDifficultyData,
-  getNextBlockData
+  getNextBlockData,
+  getLatestBlocksData
 } from './data';
+import { CGPriceData, SystemStatus } from '../../rpc/types';
 
 const router: Router = express.Router();
 
@@ -70,7 +72,7 @@ router.get('/price', async (_req: Request, res: Response) => {
 setInterval(async () => {
   const priceData = await getPriceData();
   if (Object.entries(priceData).length) {
-    SSE.sendUpdate({
+    SSE.sendUpdate<CGPriceData | object>({
       update: {
         type: 'price',
         data: await getPriceData(),
@@ -100,7 +102,7 @@ router.get('/status', async (_req: Request, res: Response) => {
 });
 
 setInterval(async () => {
-  SSE.sendUpdate({
+  SSE.sendUpdate<SystemStatus>({
     update: {
       type: 'systemStatus',
       data: await getSystemStatusData(),
@@ -199,6 +201,25 @@ router.get('/nextblock', async (_req: Request, res: Response) => {
     res.json({
       status: 500,
       type: 'nextblock',
+      error: 'Server error'
+    });
+  }
+});
+
+router.get('/latestblocks', async (_req: Request, res: Response) => {
+  try {
+    const latestBlocksData = await getLatestBlocksData();
+    res.json({
+      status: 200,
+      message: 'get latest blocks successful',
+      data: latestBlocksData,
+      type: 'latestblocks',
+      errors: null
+    });
+  } catch {
+    res.json({
+      status: 500,
+      type: 'latestblocks',
       error: 'Server error'
     });
   }

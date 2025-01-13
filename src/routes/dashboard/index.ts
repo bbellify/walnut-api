@@ -6,7 +6,8 @@ import {
   getSystemStatus,
   getPriceData,
   getFeeData,
-  getDifficultyData
+  getDifficultyData,
+  getMiningData
 } from './data';
 
 const router: Router = express.Router();
@@ -140,11 +141,11 @@ router.get('/difficulty', async (_req: Request, res: Response) => {
 
 router.get('/mining', async (_req: Request, res: Response) => {
   try {
-    const feeData = await getMiningData();
+    const miningData = await getMiningData();
     res.json({
       status: 200,
       message: 'get mining successful',
-      data: feeData,
+      data: miningData,
       type: 'mining',
       errors: null
     });

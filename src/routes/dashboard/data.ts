@@ -6,9 +6,6 @@ import { cpuTemperature, mem, currentLoad, time } from 'systeminformation';
 import {
   BlockchainInfo,
   NetworkInfo,
-  // BlockCount,
-  // BlockHash,
-  // Block,
   MempoolInfo,
   CGMarketData,
   CGPriceData
@@ -19,7 +16,7 @@ dotenv.config();
 //
 // Summary section
 //
-export async function getSummary() {
+export async function getSummaryData() {
   const blockchainInfo = await RPCClient.getblockchaininfo();
   const networkInfo = await RPCClient.getnetworkinfo();
   return toSummary(blockchainInfo, networkInfo);
@@ -128,7 +125,7 @@ function formatLargeNumber(number: number): string {
 //
 // System Status section
 //
-export async function getSystemStatus() {
+export async function getSystemStatusData() {
   const uptime = time();
   const memory = await mem();
   const cpuUsage = await currentLoad();
@@ -289,17 +286,37 @@ function convertHtoEH(hashRateH: number): number {
 //
 // Mempool section
 //
-export async function getMempool() {
+export async function getMempoolData() {
   const mempoolInfo = await RPCClient.getmempoolinfo();
-  return toMempool(mempoolInfo);
+
+  const mempoolSizeBytes = mempoolInfo.bytes;
+  // Convert bytes to weight units (WU), this is a rough estimation
+  const effectiveMempoolWeight = mempoolSizeBytes * 4;
+
+  // Estimate average block weight from recent blocks
+  let totalBlockWeight = 0;
+  const numberOfBlocksToCheck = 10; // Check last 10 blocks
+  for (let i = 1; i <= numberOfBlocksToCheck; i++) {
+    const blockHash = await RPCClient.getblockhash(
+      (await RPCClient.getblockcount()) - i
+    );
+    const block = await RPCClient.getblock(blockHash);
+    totalBlockWeight += block.weight;
+  }
+  const averageBlockWeight = totalBlockWeight / numberOfBlocksToCheck;
+
+  // Calculate how many blocks are needed
+  const estimatedBlocks = Math.ceil(
+    effectiveMempoolWeight / averageBlockWeight
+  );
+  return toMempool(mempoolInfo, estimatedBlocks);
 }
 
-function toMempool(mempool: MempoolInfo) {
+function toMempool(mempool: MempoolInfo, estimatedBlocks: number) {
   return {
     numberOfTxs: mempool.size.toFixed(0),
     minimumFee: mempool.mempoolminfee,
-    // need more info for blocksToClear
-    blocksToClear: '5'
+    blocksToClear: estimatedBlocks.toString()
   };
 }
 

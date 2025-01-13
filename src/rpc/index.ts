@@ -154,3 +154,26 @@ type RPCResponse = {
   error: any;
   id: string | number;
 };
+
+// REFERENCE:
+// this batch data structure works
+// const body = JSON.stringify([
+//   {
+//     jsonrpc: '1.0',
+//     id: 'curltext',
+//     method: 'getblockcount',
+//     params: []
+//   },
+//   {
+//     jsonrpc: '1.0',
+//     id: 'curltext',
+//     method: 'getblockchaininfo',
+//     params: []
+//   }
+// ]);
+
+// const options = {
+//   method: 'POST',
+//   body: body
+//   // headers: headers
+// };

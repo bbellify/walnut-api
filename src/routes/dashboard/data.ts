@@ -246,8 +246,6 @@ export async function getDifficultyData() {
 
   let newDifficulty = lastRetargetBlockDifficulty * adjustmentFactor;
   newDifficulty = Number(newDifficulty.toFixed(8));
-  console.log('new dif', newDifficulty);
-  console.log('old dif', lastRetargetBlockDifficulty);
 
   const percentageChange =
     (newDifficulty - lastRetargetBlockDifficulty) /
@@ -362,7 +360,8 @@ export async function getMiningData() {
     blockCount,
     currentSubsidy,
     blocksUntilHalving,
-    estimatedHalvingDate
+    estimatedHalvingDate,
+    estimatedHashrate
   );
 }
 
@@ -370,40 +369,54 @@ function toMiningData(
   blockCount: number,
   currentSubsidy: number,
   blocksUntilHalving: number,
-  estimatedHalvingDate: number
+  estimatedHalvingDate: number,
+  estimatedHashrate: number
 ) {
   return {
-    coins: calculateBitcoinMined(blockCount),
+    coins: Math.round(calculateMinedBitcoin(blockCount)).toLocaleString(),
     blockSubsidy: currentSubsidy + ' BTC',
     blocksUntilHalving: blocksUntilHalving.toLocaleString(),
     halvingEstimate: new Date(estimatedHalvingDate).toLocaleDateString(
       'en-US',
       localeOptions
     ),
-    networkHashRate: 'hash rate'
+    networkHashRate: convertHtoEH(estimatedHashrate) + ' EH/s'
   };
 }
 
-function calculateBitcoinMined(currentHeight: number) {
-  // Initial block reward
-  const initialReward = 50;
+function calculateMinedBitcoin(blockHeight: number): number {
+  const initialReward = 50; // Initial reward in BTC
+  const halvingInterval = 210000; // Blocks per halving
+  let totalBitcoinMined = 0;
 
-  // Number of blocks per halving
-  const blocksPerHalving = 210000;
+  // Calculate rewards for each halving period
+  let currentReward = initialReward;
+  let remainingBlocks = blockHeight;
 
-  // Total coins mined calculation
-  let totalCoinsMined = 0;
-  let reward = initialReward;
+  while (remainingBlocks > 0) {
+    // Determine the blocks in the current halving period
+    const blocksInCurrentPeriod = Math.min(halvingInterval, remainingBlocks);
 
-  for (let i = 0; i < currentHeight; i++) {
-    if (i > 0 && i % blocksPerHalving === 0) {
-      reward /= 2; // Halve the reward every 210,000 blocks
-    }
-    // Add the reward for this block
-    totalCoinsMined += reward;
+    // Add the mined bitcoins from this halving period
+    totalBitcoinMined += blocksInCurrentPeriod * currentReward;
+
+    // Move to the next halving period
+    currentReward /= 2;
+    remainingBlocks -= halvingInterval;
   }
 
-  return totalCoinsMined;
+  // Subtract genesis block reward as it wasn't spendable
+  if (blockHeight > 0) {
+    totalBitcoinMined -= 50;
+  }
+
+  return totalBitcoinMined;
+}
+
+function convertHtoEH(hashRateH: number): number {
+  // 1 EH/s = 10^18 H/s
+  const EHPerSecond = hashRateH / Math.pow(10, 18);
+  return EHPerSecond;
 }
 
 type GetBlockChainInfoRPCResult = {

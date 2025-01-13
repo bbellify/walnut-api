@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 import RPCClient from '../../rpc';
+import { Transaction } from 'bitcoinjs-lib';
 import { cpuTemperature, mem, currentLoad, time } from 'systeminformation';
 
 import {
@@ -460,10 +461,8 @@ export async function getNextBlockData() {
   const transactions = blockTemplate.transactions.length;
   const blockSubsidy = getBlockSubsidy(blockTemplate.height);
 
-  const buffer = Buffer.from(blockTemplate.transactions[1].data, 'hex');
-  const json = buffer.toJSON();
-  console.log('buffer', buffer);
-  console.log('json', json);
+  const tx = Transaction.fromHex(blockTemplate.transactions[1].data);
+  console.log('tx test', tx);
 
   return toNextBlockData(transactions, blockSubsidy);
 }

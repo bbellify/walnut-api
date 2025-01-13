@@ -4,6 +4,8 @@ import RPCClient, { bitcoinRPC } from '../../rpc';
 import { cpuTemperature, mem, currentLoad, time } from 'systeminformation';
 import { secondsToTime, celciusToFahrenheit } from '../../util';
 
+import { BlockchainInfo, NetworkInfo } from '../../rpc/types';
+
 dotenv.config();
 const COIN_GECKO_API_KEY = process.env.COIN_GECKO_API_KEY as string;
 const COIN_GECKO_API_URL = 'https://api.coingecko.com/api/v3/coins/bitcoin';
@@ -149,22 +151,18 @@ export async function getSystemStatus() {
 }
 
 export async function getSummary() {
-  const newSummary = await RPCClient.getblockchaininfo();
-  console.log('new summary', newSummary);
-  const summary: GetBlockChainInfoRPCResult = (
-    await bitcoinRPC(['getblockchaininfo'])
-  )[0].result;
-  return toSummary(summary);
+  const blockchainInfo = await RPCClient.getblockchaininfo();
+  const networkInfo = await RPCClient.getnetworkinfo();
+  return toSummary(blockchainInfo, networkInfo);
 }
 
-function toSummary(summary: GetBlockChainInfoRPCResult) {
+function toSummary(summary: BlockchainInfo, networkInfo: NetworkInfo) {
   return {
     blockCount: summary.blocks.toLocaleString(),
     syncStatus: (summary.verificationprogress * 100).toFixed(0) + '%',
     blockchainSize: formatBytesToGB(summary.size_on_disk) + ' GB',
-    // get these from getnetworkinfo, maybe batch or just separate requests
-    connectionsOutbound: '10',
-    connectionsInbound: '15'
+    connectionsOutbound: networkInfo.connections_out.toString(),
+    connectionsInbound: networkInfo.connections_in.toString()
   };
 }
 
@@ -423,22 +421,6 @@ function convertHtoEH(hashRateH: number): number {
   const EHPerSecond = hashRateH / Math.pow(10, 18);
   return EHPerSecond;
 }
-
-type GetBlockChainInfoRPCResult = {
-  chain: string;
-  blocks: number;
-  headers: number;
-  bestblockhash: string;
-  difficulty: number;
-  time: number;
-  mediantime: number;
-  verificationprogress: number;
-  initialblockdownload: boolean;
-  chainwork: string;
-  size_on_disk: number;
-  pruned: boolean;
-  warnings: string[];
-};
 
 type GetNetworkInfoRPCResult = {
   connections_in: number;

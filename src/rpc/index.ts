@@ -2,6 +2,8 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 import dotenv from 'dotenv';
 
+import { RPCResponse_, BlockchainInfo, NetworkInfo } from './types';
+
 dotenv.config();
 
 const HOST = 'localhost';
@@ -101,49 +103,20 @@ class RPCClient {
     return json.result;
   }
 
-  // Example method: getblockchaininfo
   public async getblockchaininfo(): Promise<BlockchainInfo> {
     return this.makeRequest('getblockchaininfo');
+  }
+
+  public async getnetworkinfo(): Promise<NetworkInfo> {
+    return this.makeRequest('getnetworkinfo');
   }
 }
 
 export default new RPCClient(HOST, PORT, COOKIE_PATH);
 
-// Define the return type of getblockchaininfo
-type BlockchainInfo = {
-  chain: string;
-  blocks: number;
-  headers: number;
-  bestblockhash: string;
-  difficulty: number;
-  mediantime: number;
-  verificationprogress: number;
-  initialblockdownload: boolean;
-  chainwork: string;
-  size_on_disk: number;
-  pruned: boolean;
-  softforks: {
-    [key: string]: {
-      type: string;
-      active: boolean;
-      height: number;
-    };
-  };
-  warnings: string;
-};
-
 // Define interface for RPC response to ensure type safety
 type RPCResponse = {
   result: any;
   error: any;
-  id: string | number;
-};
-
-type RPCResponse_<T> = {
-  result: T;
-  error?: {
-    message: string;
-    code: number;
-  };
   id: string | number;
 };

@@ -372,15 +372,18 @@ function toMiningData(
   estimatedHalvingDate: number,
   estimatedHashrate: number
 ) {
+  const coins = calculateMinedBitcoin(blockCount);
+  const coinPercent = (coins / 21000000) * 100;
+
   return {
-    coins: Math.round(calculateMinedBitcoin(blockCount)).toLocaleString(),
+    coins: Math.round(coins).toLocaleString() + ` (${coinPercent}%)`,
     blockSubsidy: currentSubsidy + ' BTC',
     blocksUntilHalving: blocksUntilHalving.toLocaleString(),
     halvingEstimate: new Date(estimatedHalvingDate).toLocaleDateString(
       'en-US',
       localeOptions
     ),
-    networkHashRate: convertHtoEH(estimatedHashrate) + ' EH/s'
+    networkHashRate: convertHtoEH(estimatedHashrate).toFixed(1) + ' EH/s'
   };
 }
 

@@ -138,6 +138,25 @@ router.get('/difficulty', async (_req: Request, res: Response) => {
   }
 });
 
+router.get('/mining', async (_req: Request, res: Response) => {
+  try {
+    const feeData = await getMiningData();
+    res.json({
+      status: 200,
+      message: 'get mining successful',
+      data: feeData,
+      type: 'mining',
+      errors: null
+    });
+  } catch {
+    res.json({
+      status: 500,
+      type: 'mining',
+      error: 'Server error'
+    });
+  }
+});
+
 setInterval(async () => {
   const priceData = await getPriceData();
   if (Object.entries(priceData).length) {

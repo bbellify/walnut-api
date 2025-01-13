@@ -14,6 +14,11 @@ const options = {
     'x-cg-demo-api-key': COIN_GECKO_API_KEY
   }
 };
+const localeOptions: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+};
 const expectedAdjustmentTime = 1209600;
 const maxAdjustmentFactor = 4;
 const blocksPerRetarget = 2016;
@@ -82,14 +87,9 @@ function toPriceData(data: MarketData): PriceData {
     priceData.marketCap = '$' + formatLargeNumber(data.market_cap.usd);
   }
   if (data.ath_date) {
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    };
     priceData.athDate = new Date(data.ath_date.usd).toLocaleDateString(
       'en-US',
-      options
+      localeOptions
     );
   }
   return priceData;
@@ -224,7 +224,7 @@ export async function getDifficultyData() {
     .result;
   const currentBlockTime = currentBlock.time as number;
 
-  const lastRetargetHeight = blockCount - (blockCount % blocksPerRetarget) - 1;
+  const lastRetargetHeight = blockCount - (blockCount % blocksPerRetarget);
   const lastRetargetBlockHash = (
     await bitcoinRPC(['getblockhash'], [[lastRetargetHeight]])
   )[0].result;
@@ -272,18 +272,12 @@ function toDifficultyData(
   const secondsUntilRetarget = blocksToRetarget * secondsPerBlock;
   const estimatedTimeStamp = currentBlockTime + secondsUntilRetarget;
 
-  const options: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  };
-
   return {
     difficulty: formatScientificNotation(difficulty),
     blocksToRetarget: blocksToRetarget.toString(),
     retargetDate: new Date(estimatedTimeStamp * 1000).toLocaleDateString(
       'en-US',
-      options
+      localeOptions
     ),
     estimatedAdjustment: percentageChange.toFixed(2) + '%'
   };
@@ -342,6 +336,74 @@ function formatScientificNotation(number: number): string {
 
   // Combine everything into the desired format
   return `${formattedCoefficient}×10${sign}${superscript}`;
+}
+
+export async function getMiningData() {
+  const blockCount = (await bitcoinRPC(['getblockcount']))[0].result;
+  const currentBlockHash = (
+    await bitcoinRPC(['getblockhash'], [[blockCount]])
+  )[0].result;
+  const currentBlock = (await bitcoinRPC(['getblock'], [[currentBlockHash]]))[0]
+    .result;
+  const currentBlockTime = currentBlock.time as number;
+
+  const halvings = Math.floor(blockCount / 210000);
+  const currentSubsidy = 50 / 2 ** halvings;
+
+  const blocksUntilHalving = 210000 - (blockCount % 210000);
+  const secondsUntilHalving = blocksUntilHalving * secondsPerBlock;
+  const estimatedHalvingDate = currentBlockTime + secondsUntilHalving * 1000;
+
+  // Current network hashrate (rough estimate)
+  const difficulty = currentBlock.difficulty as number;
+  const estimatedHashrate = (difficulty * 2 ** 32) / 600; // In H/s
+
+  return toMiningData(
+    blockCount,
+    currentSubsidy,
+    blocksUntilHalving,
+    estimatedHalvingDate
+  );
+}
+
+function toMiningData(
+  blockCount: number,
+  currentSubsidy: number,
+  blocksUntilHalving: number,
+  estimatedHalvingDate: number
+) {
+  return {
+    coins: calculateBitcoinMined(blockCount),
+    blockSubsidy: currentSubsidy + ' BTC',
+    blocksUntilHalving: blocksUntilHalving.toString(),
+    halvingEstimate: new Date(estimatedHalvingDate).toLocaleDateString(
+      'en-US',
+      localeOptions
+    ),
+    networkHashRate: 'hash rate'
+  };
+}
+
+function calculateBitcoinMined(currentHeight: number) {
+  // Initial block reward
+  const initialReward = 50;
+
+  // Number of blocks per halving
+  const blocksPerHalving = 210000;
+
+  // Total coins mined calculation
+  let totalCoinsMined = 0;
+  let reward = initialReward;
+
+  for (let i = 0; i < currentHeight; i++) {
+    if (i > 0 && i % blocksPerHalving === 0) {
+      reward /= 2; // Halve the reward every 210,000 blocks
+    }
+    // Add the reward for this block
+    totalCoinsMined += reward;
+  }
+
+  return totalCoinsMined;
 }
 
 type GetBlockChainInfoRPCResult = {

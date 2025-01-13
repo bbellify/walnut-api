@@ -486,8 +486,11 @@ function toNextBlockData(
     transactions: transactions.toLocaleString(),
     reward: blockSubsidy.toFixed(3) + ' BTC',
     output: (+convertSatoshisToBTC(totalOut).toFixed(2)).toLocaleString(),
-    totalFees: (+convertSatoshisToBTC(totalFees).toFixed(2)).toLocaleString(),
-    medianFee: convertToSatPerByte(totalFees / transactions) + ' sat/vB'
+    totalFees:
+      (+convertSatoshisToBTC(totalFees).toFixed(4)).toLocaleString() + ' BTC',
+    medianFee:
+      convertToSatPerByte(convertSatoshisToBTC(totalFees) / transactions) +
+      ' sat/vB'
   };
 }
 

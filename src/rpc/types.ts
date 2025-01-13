@@ -57,3 +57,9 @@ export type NetworkInfo = {
   }[];
   warnings: string;
 };
+
+export type SmartFeeEstimate = {
+  feerate: number;
+  errors: string[];
+  blocks: number;
+};

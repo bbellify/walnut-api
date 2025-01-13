@@ -2,7 +2,12 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 import dotenv from 'dotenv';
 
-import { RPCResponse_, BlockchainInfo, NetworkInfo } from './types';
+import {
+  RPCResponse_,
+  BlockchainInfo,
+  NetworkInfo,
+  SmartFeeEstimate
+} from './types';
 
 dotenv.config();
 
@@ -109,6 +114,12 @@ class RPCClient {
 
   public async getnetworkinfo(): Promise<NetworkInfo> {
     return this.makeRequest('getnetworkinfo');
+  }
+
+  public async estimateSmartFee(
+    params: [number, string?]
+  ): Promise<SmartFeeEstimate> {
+    return this.makeRequest('estimatesmartfee', params);
   }
 }
 

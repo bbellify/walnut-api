@@ -172,40 +172,20 @@ function formatBytesToGB(bytes: number) {
 }
 
 export async function getFeeData() {
-  const fees = await bitcoinRPC(
-    [
-      'estimatesmartfee',
-      'estimatesmartfee',
-      'estimatesmartfee',
-      'estimatesmartfee'
-    ],
-    [[1], [6], [144], [1008]]
-  );
-  return toFeeData(
-    fees.map((fee) => {
-      return fee.error
-        ? {
-            feerate: ''
-          }
-        : fee.result;
-    })
-  );
+  const { feerate: immediate } = await RPCClient.estimateSmartFee([1]);
+  const { feerate: hour } = await RPCClient.estimateSmartFee([1]);
+  const { feerate: day } = await RPCClient.estimateSmartFee([1]);
+  const { feerate: week } = await RPCClient.estimateSmartFee([1]);
+
+  return toFeeData([immediate, hour, day, week]);
 }
 
-function toFeeData(fees: GetFeesRPCResult[]) {
+function toFeeData(fees: number[]) {
   return {
-    immediate: fees[0].feerate
-      ? convertToSatPerByte(fees[0].feerate) + ' sat/vB'
-      : '--',
-    hour: fees[1].feerate
-      ? convertToSatPerByte(fees[1].feerate) + ' sat/vB'
-      : '--',
-    day: fees[2].feerate
-      ? convertToSatPerByte(fees[2].feerate) + ' sat/vB'
-      : '--',
-    week: fees[3].feerate
-      ? convertToSatPerByte(fees[3].feerate) + ' sat/vB'
-      : '--'
+    immediate: fees[0] ? convertToSatPerByte(fees[0]) + ' sat/vB' : '--',
+    hour: fees[1] ? convertToSatPerByte(fees[1]) + ' sat/vB' : '--',
+    day: fees[2] ? convertToSatPerByte(fees[2]) + ' sat/vB' : '--',
+    week: fees[3] ? convertToSatPerByte(fees[3]) + ' sat/vB' : '--'
   };
 }
 
@@ -422,17 +402,8 @@ function convertHtoEH(hashRateH: number): number {
   return EHPerSecond;
 }
 
-type GetNetworkInfoRPCResult = {
-  connections_in: number;
-  connections_out: number;
-};
-
 type GetMempoolRPCResult = {
   size: number;
   bytes: number;
   mempoolminfee: number;
-};
-
-type GetFeesRPCResult = {
-  feerate: number;
 };

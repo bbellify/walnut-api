@@ -10,7 +10,8 @@ import {
   MempoolInfo,
   CGMarketData,
   CGPriceData,
-  SystemStatus
+  SystemStatus,
+  Block
 } from '../../rpc/types';
 
 dotenv.config();
@@ -465,12 +466,10 @@ export async function getNextBlockData() {
   let totalOut = 0;
   let totalFees = 0;
   blockTemplate.transactions.forEach((t) => {
-    let txOut = 0;
     const tx = Transaction.fromHex(t.data);
     if (!tx.isCoinbase()) {
       totalFees += t.fee;
-      tx.outs.forEach((o) => (txOut += o.value));
-      totalOut += txOut;
+      tx.outs.forEach((o) => (totalOut += o.value));
     }
   });
 
@@ -499,6 +498,43 @@ function convertSatoshisToBTC(sats: number): number {
   return sats / 100000000;
 }
 
+//
+// Latest Blocks section
+//
+const MAX_BLOCK_WEIGHT = 4000000;
 export async function getLatestBlocksData() {
-  // const blocksToGet = 10;
+  const blocksToGet = 10;
+  let height = await RPCClient.getblockcount();
+  const blocks = [];
+
+  for (let i = 0; i < blocksToGet; i++) {
+    blocks.push(await RPCClient.getblock(await RPCClient.getblockhash(height)));
+    height--;
+  }
+  return toLatestBlocksData(blocks);
 }
+
+function toLatestBlocksData(blocks: Block[]) {
+  return blocks.map((blk) => {
+    let totalOut = 0;
+    blk.tx.forEach((t) => {
+      const tx = Transaction.fromHex(t);
+      if (!tx.isCoinbase()) {
+        tx.outs.forEach((o) => (totalOut += o.value));
+      }
+    });
+    return {
+      height: blk.height,
+      time: new Date(blk.time * 1000).toLocaleTimeString(),
+      txs: blk.nTx.toLocaleString(),
+      volume: (+convertSatoshisToBTC(totalOut).toFixed(2)).toLocaleString(),
+      percentFull: ((blk.weight / MAX_BLOCK_WEIGHT) * 100).toFixed(2) + '%'
+    };
+  });
+}
+
+//   age: string
+//   ttm: string
+//   miner: string
+//   feeRates: string
+//   fees: string

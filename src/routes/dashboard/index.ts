@@ -1,5 +1,4 @@
 import express, { Request, Response, Router } from 'express';
-import dotenv from 'dotenv';
 import SSE from '../../sse';
 import {
   getSummaryData,
@@ -20,8 +19,6 @@ router.get('/stream', (req, res) => {
   // const clientId = SSE.init(req, res);
   SSE.init(req, res);
 });
-
-dotenv.config();
 
 router.get('/summary', async (_req: Request, res: Response) => {
   try {

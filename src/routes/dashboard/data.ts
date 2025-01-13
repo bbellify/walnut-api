@@ -525,7 +525,14 @@ function toLatestBlocksData(blocks: Block[]) {
       height: blk.height,
       time: new Date(blk.time * 1000).toLocaleTimeString(),
       txs: blk.nTx.toLocaleString(),
-      percentFull: ((blk.weight / MAX_BLOCK_WEIGHT) * 100).toFixed(2) + '%'
+      percentFull: ((blk.weight / MAX_BLOCK_WEIGHT) * 100).toFixed(2) + '%',
+      volume: 'volume',
+      age: 'age h m',
+      ttm: 'ttm',
+      miner: 'Miner',
+      feeRates: '1 2 3',
+      fees: 'amount BTC'
+
       // volume: (+convertSatoshisToBTC(totalOut).toFixed(2)).toLocaleString(),
       // age
       // ttm

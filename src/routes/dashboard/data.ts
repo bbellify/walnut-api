@@ -350,7 +350,7 @@ export async function getDifficultyData() {
     maxAdjustmentFactor,
     Math.max(
       1 / maxAdjustmentFactor,
-      actualReadjustmentTime / expectedAdjustmentTime
+      expectedAdjustmentTime / actualReadjustmentTime
     )
   );
 
@@ -487,7 +487,7 @@ function toNextBlockData(
     reward: blockSubsidy.toFixed(3) + ' BTC',
     output: (+convertSatoshisToBTC(totalOut).toFixed(2)).toLocaleString(),
     totalFees:
-      (+convertSatoshisToBTC(totalFees).toFixed(4)).toLocaleString() + ' BTC',
+      (+convertSatoshisToBTC(totalFees).toFixed(5)).toLocaleString() + ' BTC',
     medianFee:
       convertToSatPerByte(convertSatoshisToBTC(totalFees) / transactions) +
       ' sat/vB'

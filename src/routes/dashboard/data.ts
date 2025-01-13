@@ -206,8 +206,7 @@ export async function getMiningData() {
   const currentBlockHash = await RPCClient.getblockhash(blockCount);
   const currentBlock = await RPCClient.getblock(currentBlockHash);
 
-  const halvings = Math.floor(blockCount / 210000);
-  const currentSubsidy = 50 / 2 ** halvings;
+  const currentSubsidy = getBlockSubsidy(blockCount);
 
   const blocksUntilHalving = 210000 - (blockCount % 210000);
   const secondsUntilHalving = blocksUntilHalving * secondsPerBlock;
@@ -224,6 +223,11 @@ export async function getMiningData() {
     estimatedHalvingDate,
     estimatedHashrate
   );
+}
+
+function getBlockSubsidy(blockCount: number): number {
+  const halvings = Math.floor(blockCount / 210000);
+  return 50 / 2 ** halvings;
 }
 
 function toMiningData(
@@ -377,7 +381,7 @@ function toDifficultyData(
 
   return {
     difficulty: formatScientificNotation(difficulty),
-    blocksToRetarget: blocksToRetarget.toString(),
+    blocksToRetarget: blocksToRetarget.toLocaleString(),
     retargetDate: new Date(estimatedTimeStamp * 1000).toLocaleDateString(
       'en-US',
       localeOptions
@@ -440,3 +444,35 @@ function formatScientificNotation(number: number): string {
   // Combine everything into the desired format
   return `${formattedCoefficient}×10${sign}${superscript}`;
 }
+
+//
+// Next Block section
+//
+export async function getNextBlockData() {
+  const blockTemplate = await RPCClient.getblocktemplate([
+    'segwit',
+    'csv',
+    'cltv',
+    'p2sh',
+    'taproot'
+  ]);
+
+  const transactions = blockTemplate.transactions.length;
+  const blockSubsidy = getBlockSubsidy(blockTemplate.height);
+
+  return toNextBlockData(transactions, blockSubsidy);
+}
+
+function toNextBlockData(transactions: number, blockSubsidy: number) {
+  return {
+    transactions: transactions.toLocaleString(),
+    reward: blockSubsidy.toFixed(3) + ' BTC',
+    output: 'total value of the txs',
+    medianFee: 'calc this too'
+  };
+}
+
+// transactions: string
+// output: string
+// reward: string
+// medianFee: string

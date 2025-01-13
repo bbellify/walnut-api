@@ -11,7 +11,8 @@ import {
   BlockHash,
   Block,
   MempoolInfo,
-  Difficulty
+  Difficulty,
+  BlockTemplate
 } from './types';
 
 dotenv.config();
@@ -104,6 +105,11 @@ class RPCClient {
 
   public async getdifficulty(): Promise<Difficulty> {
     return this.makeRequest('getdifficulty');
+  }
+
+  // not full support for this RPC method
+  public async getblocktemplate(rules: string[]): Promise<BlockTemplate> {
+    return this.makeRequest('getblocktemplate', [{ rules }]);
   }
 }
 

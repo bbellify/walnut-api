@@ -90,6 +90,41 @@ export type Block = {
   nextblockhash: string;
 };
 
+export type BlockTemplate = {
+  version: number;
+  rules: string[];
+  vbavailable: {
+    rulename: string;
+  };
+  vbrequired: number;
+  previousblockhash: string;
+  transactions: {
+    data: string;
+    txid: string;
+    hash: string;
+    depends: number[];
+    fee: number;
+    sigops: number;
+    weight: number;
+  }[];
+  coinbaseaux: {
+    key: string;
+  };
+  coinbasevalue: number;
+  longpollid: string;
+  target: string;
+  mintime: number;
+  mutable: string[];
+  noncerange: string;
+  sigoplimit: number;
+  sizelimit: number;
+  weightlimit: number;
+  curtime: number;
+  bits: string;
+  height: number;
+  default_witness_committment: string;
+};
+
 export type MempoolInfo = {
   loaded: boolean;
   size: number;

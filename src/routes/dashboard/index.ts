@@ -8,7 +8,8 @@ import {
   getFeeData,
   getMiningData,
   getMempoolData,
-  getDifficultyData
+  getDifficultyData,
+  getNextBlockData
 } from './data';
 
 const router: Router = express.Router();
@@ -179,6 +180,25 @@ router.get('/difficulty', async (_req: Request, res: Response) => {
     res.json({
       status: 500,
       type: 'difficulty',
+      error: 'Server error'
+    });
+  }
+});
+
+router.get('/nextblock', async (_req: Request, res: Response) => {
+  try {
+    const nextBlockData = await getNextBlockData();
+    res.json({
+      status: 200,
+      message: 'get next block successful',
+      data: nextBlockData,
+      type: 'nextblock',
+      errors: null
+    });
+  } catch {
+    res.json({
+      status: 500,
+      type: 'nextblock',
       error: 'Server error'
     });
   }

@@ -352,7 +352,7 @@ export async function getMiningData() {
 
   const blocksUntilHalving = 210000 - (blockCount % 210000);
   const secondsUntilHalving = blocksUntilHalving * secondsPerBlock;
-  const estimatedHalvingDate = currentBlockTime + secondsUntilHalving * 1000;
+  const estimatedHalvingDate = (currentBlockTime + secondsUntilHalving) * 1000;
 
   // Current network hashrate (rough estimate)
   const difficulty = currentBlock.difficulty as number;
@@ -375,7 +375,7 @@ function toMiningData(
   return {
     coins: calculateBitcoinMined(blockCount),
     blockSubsidy: currentSubsidy + ' BTC',
-    blocksUntilHalving: blocksUntilHalving.toString(),
+    blocksUntilHalving: blocksUntilHalving.toLocaleString(),
     halvingEstimate: new Date(estimatedHalvingDate).toLocaleDateString(
       'en-US',
       localeOptions

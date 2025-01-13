@@ -179,10 +179,10 @@ export function celciusToFahrenheit(c: number): number {
 // Fees section
 //
 export async function getFeeData() {
-  const { feerate: immediate } = await RPCClient.estimatesmartfee([1]);
-  const { feerate: hour } = await RPCClient.estimatesmartfee([6]);
-  const { feerate: day } = await RPCClient.estimatesmartfee([144]);
-  const { feerate: week } = await RPCClient.estimatesmartfee([1008]);
+  const { feerate: immediate } = await RPCClient.estimatesmartfee(1);
+  const { feerate: hour } = await RPCClient.estimatesmartfee(6);
+  const { feerate: day } = await RPCClient.estimatesmartfee(144);
+  const { feerate: week } = await RPCClient.estimatesmartfee(1008);
 
   return toFeeData([immediate, hour, day, week]);
 }
@@ -205,23 +205,19 @@ function convertToSatPerByte(feeRateInBTCPerKB: number) {
 // Mining section
 //
 export async function getMiningData() {
-  const blockCount = (await bitcoinRPC(['getblockcount']))[0].result;
-  const currentBlockHash = (
-    await bitcoinRPC(['getblockhash'], [[blockCount]])
-  )[0].result;
-  const currentBlock = (await bitcoinRPC(['getblock'], [[currentBlockHash]]))[0]
-    .result;
-  const currentBlockTime = currentBlock.time as number;
+  const blockCount = await RPCClient.getblockcount();
+  const currentBlockHash = await RPCClient.getblockhash(blockCount);
+  const currentBlock = await RPCClient.getblock(currentBlockHash);
 
   const halvings = Math.floor(blockCount / 210000);
   const currentSubsidy = 50 / 2 ** halvings;
 
   const blocksUntilHalving = 210000 - (blockCount % 210000);
   const secondsUntilHalving = blocksUntilHalving * secondsPerBlock;
-  const estimatedHalvingDate = (currentBlockTime + secondsUntilHalving) * 1000;
+  const estimatedHalvingDate = (currentBlock.time + secondsUntilHalving) * 1000;
 
   // Current network hashrate (rough estimate)
-  const difficulty = currentBlock.difficulty as number;
+  const difficulty = currentBlock.difficulty;
   const estimatedHashrate = (difficulty * 2 ** 32) / 600; // In H/s
 
   return toMiningData(

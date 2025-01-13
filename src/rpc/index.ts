@@ -122,21 +122,23 @@ class RPCClient {
   }
 
   public async estimatesmartfee(
-    params: [number, string?]
+    conf_target: number,
+    estimate_mode?: string
   ): Promise<SmartFeeEstimate> {
-    return this.makeRequest('estimatesmartfee', params);
+    return this.makeRequest('estimatesmartfee', [conf_target, estimate_mode]);
   }
 
   public async getblockcount(): Promise<BlockCount> {
     return this.makeRequest('getblockcount');
   }
 
-  public async getblockhash(params: [height: number]): Promise<BlockHash> {
-    return this.makeRequest('getblockhash', params);
+  public async getblockhash(height: number): Promise<BlockHash> {
+    return this.makeRequest('getblockhash', [height]);
   }
 
-  public async getblock(params: [hash: string]): Promise<Block> {
-    return this.makeRequest('getblock', params);
+  // no support for verbosity argument yet
+  public async getblock(hash: string): Promise<Block> {
+    return this.makeRequest('getblock', [hash]);
   }
 
   public async getmempoolinfo(): Promise<MempoolInfo> {

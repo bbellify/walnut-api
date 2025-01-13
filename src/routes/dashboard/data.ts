@@ -314,8 +314,8 @@ export async function getMempoolData() {
 
 function toMempool(mempool: MempoolInfo, estimatedBlocks: number) {
   return {
-    numberOfTxs: mempool.size.toFixed(0),
-    minimumFee: mempool.mempoolminfee,
+    numberOfTxs: +mempool.size.toFixed(0).toLocaleString(),
+    minimumFee: convertToSatPerByte(mempool.mempoolminfee),
     blocksToClear: estimatedBlocks.toString()
   };
 }

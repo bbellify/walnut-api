@@ -376,7 +376,7 @@ function toMiningData(
   const coinPercent = (coins / 21000000) * 100;
 
   return {
-    coins: Math.round(coins).toLocaleString() + ` (${coinPercent}%)`,
+    coins: Math.round(coins).toLocaleString() + ` (${coinPercent.toFixed(2)}%)`,
     blockSubsidy: currentSubsidy + ' BTC',
     blocksUntilHalving: blocksUntilHalving.toLocaleString(),
     halvingEstimate: new Date(estimatedHalvingDate).toLocaleDateString(

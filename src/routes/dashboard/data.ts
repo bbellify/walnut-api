@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
-import { bitcoinRPC } from '../../rpc';
+import RPCClient, { bitcoinRPC } from '../../rpc';
 import { cpuTemperature, mem, currentLoad, time } from 'systeminformation';
 import { secondsToTime, celciusToFahrenheit } from '../../util';
 
@@ -149,6 +149,8 @@ export async function getSystemStatus() {
 }
 
 export async function getSummary() {
+  const newSummary = await RPCClient.getblockchaininfo();
+  console.log('new summary', newSummary);
   const summary: GetBlockChainInfoRPCResult = (
     await bitcoinRPC(['getblockchaininfo'])
   )[0].result;

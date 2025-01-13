@@ -461,18 +461,33 @@ export async function getNextBlockData() {
   const transactions = blockTemplate.transactions.length;
   const blockSubsidy = getBlockSubsidy(blockTemplate.height);
 
-  const tx = Transaction.fromHex(blockTemplate.transactions[1].data);
-  console.log('tx test', tx);
+  let totalOut = 0;
+  let totalFees = 0;
+  blockTemplate.transactions.forEach((t) => {
+    let txOut = 0;
+    const tx = Transaction.fromHex(t.data);
+    if (!tx.isCoinbase()) {
+      totalFees += t.fee;
+      tx.outs.forEach((o) => (txOut += o.value));
+      totalOut += txOut;
+    }
+  });
 
-  return toNextBlockData(transactions, blockSubsidy);
+  return toNextBlockData(transactions, blockSubsidy, totalOut, totalFees);
 }
 
-function toNextBlockData(transactions: number, blockSubsidy: number) {
+function toNextBlockData(
+  transactions: number,
+  blockSubsidy: number,
+  totalOut: number,
+  totalFees: number
+) {
   return {
     transactions: transactions.toLocaleString(),
     reward: blockSubsidy.toFixed(3) + ' BTC',
-    output: 'total value of the txs',
-    medianFee: 'calc this too'
+    output: totalOut,
+    totalFees: totalFees,
+    medianFee: totalFees / transactions
   };
 }
 

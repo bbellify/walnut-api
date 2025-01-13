@@ -101,6 +101,8 @@ export type MempoolInfo = {
   unbroadcastcount: number;
 };
 
+export type Difficulty = number;
+
 // CoinGecko API types
 export type CGMarketData = {
   current_price: {

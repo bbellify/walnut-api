@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
-import RPCClient, { bitcoinRPC } from '../../rpc';
+import RPCClient from '../../rpc';
 import { cpuTemperature, mem, currentLoad, time } from 'systeminformation';
 
 import {
@@ -328,26 +328,18 @@ const maxAdjustmentFactor = 4;
 const blocksPerRetarget = 2016;
 const secondsPerBlock = 600;
 export async function getDifficultyData() {
-  const difficulty = (await bitcoinRPC(['getdifficulty']))[0].result as number;
-  const blockCount = (await bitcoinRPC(['getblockcount']))[0].result;
-  const currentBlockHash = (
-    await bitcoinRPC(['getblockhash'], [[blockCount]])
-  )[0].result;
-  const currentBlock = (await bitcoinRPC(['getblock'], [[currentBlockHash]]))[0]
-    .result;
-  const currentBlockTime = currentBlock.time as number;
+  const difficulty = await RPCClient.getdifficulty();
+  const blockCount = await RPCClient.getblockcount();
+  const currentBlock = await RPCClient.getblock(
+    await RPCClient.getblockhash(blockCount)
+  );
 
   const lastRetargetHeight = blockCount - (blockCount % blocksPerRetarget);
-  const lastRetargetBlockHash = (
-    await bitcoinRPC(['getblockhash'], [[lastRetargetHeight]])
-  )[0].result;
-  const lastRetargetBlock = (
-    await bitcoinRPC(['getblock'], [[lastRetargetBlockHash]])
-  )[0].result;
+  const lastRetargetBlock = await RPCClient.getblock(
+    await RPCClient.getblockhash(lastRetargetHeight)
+  );
 
-  const lastRetargetBlockTime = lastRetargetBlock.time as number;
-  const lastRetargetBlockDifficulty = lastRetargetBlock.difficulty as number;
-  const actualReadjustmentTime = currentBlockTime - lastRetargetBlockTime;
+  const actualReadjustmentTime = currentBlock.time - lastRetargetBlock.time;
 
   const adjustmentFactor = Math.min(
     maxAdjustmentFactor,
@@ -357,17 +349,17 @@ export async function getDifficultyData() {
     )
   );
 
-  let newDifficulty = lastRetargetBlockDifficulty * adjustmentFactor;
+  let newDifficulty = lastRetargetBlock.difficulty * adjustmentFactor;
   newDifficulty = Number(newDifficulty.toFixed(8));
 
   const percentageChange =
-    (newDifficulty - lastRetargetBlockDifficulty) /
-    (lastRetargetBlockDifficulty * 100);
+    (newDifficulty - lastRetargetBlock.difficulty) /
+    (lastRetargetBlock.difficulty * 100);
 
   return toDifficultyData(
     difficulty,
     blockCount,
-    currentBlockTime,
+    currentBlock.time,
     percentageChange
   );
 }

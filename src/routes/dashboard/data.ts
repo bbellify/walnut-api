@@ -460,6 +460,11 @@ export async function getNextBlockData() {
   const transactions = blockTemplate.transactions.length;
   const blockSubsidy = getBlockSubsidy(blockTemplate.height);
 
+  const buffer = Buffer.from(blockTemplate.transactions[1].data, 'hex');
+  const json = buffer.toJSON();
+  console.log('buffer', buffer);
+  console.log('json', json);
+
   return toNextBlockData(transactions, blockSubsidy);
 }
 

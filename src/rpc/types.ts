@@ -64,6 +64,43 @@ export type SmartFeeEstimate = {
   blocks: number;
 };
 
+export type BlockCount = number;
+
+export type BlockHash = string;
+
+export type Block = {
+  hash: string;
+  confirmations: number;
+  size: number;
+  strippedsize: number;
+  weight: number;
+  height: number;
+  version: number;
+  versionHex: string;
+  merkleroot: string;
+  tx: string[];
+  time: number;
+  mediantime: number;
+  nonce: number;
+  bits: string;
+  difficulty: number;
+  chainwork: string;
+  nTx: number;
+  previousblockhash: string;
+  nextblockhash: string;
+};
+
+export type MempoolInfo = {
+  loaded: boolean;
+  size: number;
+  bytes: number;
+  usage: number;
+  maxmempool: number;
+  mempoolminfee: number;
+  minrelaytxfee: number;
+  unbroadcastcount: number;
+};
+
 // CoinGecko API types
 export type CGMarketData = {
   current_price: {

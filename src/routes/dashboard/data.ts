@@ -6,6 +6,10 @@ import { cpuTemperature, mem, currentLoad, time } from 'systeminformation';
 import {
   BlockchainInfo,
   NetworkInfo,
+  // BlockCount,
+  // BlockHash,
+  // Block,
+  MempoolInfo,
   CGMarketData,
   CGPriceData
 } from '../../rpc/types';
@@ -175,10 +179,10 @@ export function celciusToFahrenheit(c: number): number {
 // Fees section
 //
 export async function getFeeData() {
-  const { feerate: immediate } = await RPCClient.estimateSmartFee([1]);
-  const { feerate: hour } = await RPCClient.estimateSmartFee([1]);
-  const { feerate: day } = await RPCClient.estimateSmartFee([1]);
-  const { feerate: week } = await RPCClient.estimateSmartFee([1]);
+  const { feerate: immediate } = await RPCClient.estimatesmartfee([1]);
+  const { feerate: hour } = await RPCClient.estimatesmartfee([6]);
+  const { feerate: day } = await RPCClient.estimatesmartfee([144]);
+  const { feerate: week } = await RPCClient.estimatesmartfee([1008]);
 
   return toFeeData([immediate, hour, day, week]);
 }
@@ -241,7 +245,7 @@ function toMiningData(
 
   return {
     coins: Math.round(coins).toLocaleString() + ` (${coinPercent.toFixed(2)}%)`,
-    blockSubsidy: currentSubsidy + ' BTC',
+    blockSubsidy: currentSubsidy.toFixed(3) + ' BTC',
     blocksUntilHalving: blocksUntilHalving.toLocaleString(),
     halvingEstimate: new Date(estimatedHalvingDate).toLocaleDateString(
       'en-US',
@@ -290,12 +294,11 @@ function convertHtoEH(hashRateH: number): number {
 // Mempool section
 //
 export async function getMempool() {
-  const mempool: GetMempoolRPCResult = (await bitcoinRPC(['getmempoolinfo']))[0]
-    .result;
-  return toMempool(mempool);
+  const mempoolInfo = await RPCClient.getmempoolinfo();
+  return toMempool(mempoolInfo);
 }
 
-function toMempool(mempool: GetMempoolRPCResult) {
+function toMempool(mempool: MempoolInfo) {
   return {
     numberOfTxs: mempool.size.toFixed(0),
     minimumFee: mempool.mempoolminfee,
@@ -432,9 +435,3 @@ function formatScientificNotation(number: number): string {
   // Combine everything into the desired format
   return `${formattedCoefficient}×10${sign}${superscript}`;
 }
-
-type GetMempoolRPCResult = {
-  size: number;
-  bytes: number;
-  mempoolminfee: number;
-};

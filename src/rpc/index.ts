@@ -6,7 +6,12 @@ import {
   RPCResponse_,
   BlockchainInfo,
   NetworkInfo,
-  SmartFeeEstimate
+  SmartFeeEstimate,
+  BlockCount,
+  BlockHash,
+  Block,
+  // continue here, want in order in types
+  MempoolInfo
 } from './types';
 
 dotenv.config();
@@ -116,10 +121,26 @@ class RPCClient {
     return this.makeRequest('getnetworkinfo');
   }
 
-  public async estimateSmartFee(
+  public async estimatesmartfee(
     params: [number, string?]
   ): Promise<SmartFeeEstimate> {
     return this.makeRequest('estimatesmartfee', params);
+  }
+
+  public async getblockcount(): Promise<BlockCount> {
+    return this.makeRequest('getblockcount');
+  }
+
+  public async getblockhash(params: [height: number]): Promise<BlockHash> {
+    return this.makeRequest('getblockhash', params);
+  }
+
+  public async getblock(params: [hash: string]): Promise<Block> {
+    return this.makeRequest('getblock', params);
+  }
+
+  public async getmempoolinfo(): Promise<MempoolInfo> {
+    return this.makeRequest('getmempoolinfo');
   }
 }
 

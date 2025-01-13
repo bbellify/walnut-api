@@ -516,25 +516,22 @@ export async function getLatestBlocksData() {
 
 function toLatestBlocksData(blocks: Block[]) {
   return blocks.map((blk) => {
-    let totalOut = 0;
-    blk.tx.forEach((t) => {
-      const tx = Transaction.fromHex(t);
-      if (!tx.isCoinbase()) {
-        tx.outs.forEach((o) => (totalOut += o.value));
-      }
-    });
+    // blk.tx.forEach((t) => {
+    // getrawtransaction on every one? yikes
+    // const tx = Transaction.fromHex(t);
+    // tx.outs.forEach((o) => (totalOut += o.value));
+    // });
     return {
       height: blk.height,
       time: new Date(blk.time * 1000).toLocaleTimeString(),
       txs: blk.nTx.toLocaleString(),
-      volume: (+convertSatoshisToBTC(totalOut).toFixed(2)).toLocaleString(),
       percentFull: ((blk.weight / MAX_BLOCK_WEIGHT) * 100).toFixed(2) + '%'
+      // volume: (+convertSatoshisToBTC(totalOut).toFixed(2)).toLocaleString(),
+      // age
+      // ttm
+      // miner
+      // feeRates
+      // fees
     };
   });
 }
-
-//   age: string
-//   ttm: string
-//   miner: string
-//   feeRates: string
-//   fees: string

@@ -2,11 +2,43 @@ import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 import RPCClient, { bitcoinRPC } from '../../rpc';
 import { cpuTemperature, mem, currentLoad, time } from 'systeminformation';
-import { secondsToTime, celciusToFahrenheit } from '../../util';
 
-import { BlockchainInfo, NetworkInfo } from '../../rpc/types';
+import {
+  BlockchainInfo,
+  NetworkInfo,
+  CGMarketData,
+  CGPriceData
+} from '../../rpc/types';
 
 dotenv.config();
+
+//
+// Summary section
+//
+export async function getSummary() {
+  const blockchainInfo = await RPCClient.getblockchaininfo();
+  const networkInfo = await RPCClient.getnetworkinfo();
+  return toSummary(blockchainInfo, networkInfo);
+}
+
+function toSummary(summary: BlockchainInfo, networkInfo: NetworkInfo) {
+  return {
+    blockCount: summary.blocks.toLocaleString(),
+    syncStatus: (summary.verificationprogress * 100).toFixed(0) + '%',
+    blockchainSize: formatBytesToGB(summary.size_on_disk) + ' GB',
+    connectionsOutbound: networkInfo.connections_out.toString(),
+    connectionsInbound: networkInfo.connections_in.toString()
+  };
+}
+
+function formatBytesToGB(bytes: number) {
+  const gigabytes = bytes / 1000 ** 3;
+  return gigabytes.toFixed(1);
+}
+
+//
+// Price section (CoinGecko API)
+//
 const COIN_GECKO_API_KEY = process.env.COIN_GECKO_API_KEY as string;
 const COIN_GECKO_API_URL = 'https://api.coingecko.com/api/v3/coins/bitcoin';
 const options = {
@@ -21,39 +53,11 @@ const localeOptions: Intl.DateTimeFormatOptions = {
   month: 'long',
   day: 'numeric'
 };
-const expectedAdjustmentTime = 1209600;
-const maxAdjustmentFactor = 4;
-const blocksPerRetarget = 2016;
-const secondsPerBlock = 600;
 
-type MarketData = {
-  current_price: {
-    usd: number;
-  };
-  ath: {
-    usd: number;
-  };
-  market_cap: {
-    usd: number;
-  };
-  ath_date: {
-    usd: string;
-  };
-  ath_change_percentage: {
-    usd: number;
-  };
-};
-type PriceData = {
-  price: string;
-  marketCap: string;
-  ath: string;
-  declineFromAth: string;
-  athDate: string;
-};
-export async function getPriceData(): Promise<PriceData | object> {
+export async function getPriceData(): Promise<CGPriceData | object> {
   return fetch(COIN_GECKO_API_URL, options)
     .then(async (res) => {
-      const response = (await res.json()) as { market_data: MarketData };
+      const response = (await res.json()) as { market_data: CGMarketData };
       const marketData = response.market_data;
       if (marketData) {
         const priceData = toPriceData(marketData);
@@ -67,7 +71,7 @@ export async function getPriceData(): Promise<PriceData | object> {
     });
 }
 
-function toPriceData(data: MarketData): PriceData {
+function toPriceData(data: CGMarketData): CGPriceData {
   const priceData = {
     price: '',
     marketCap: '',
@@ -117,21 +121,9 @@ function formatLargeNumber(number: number): string {
   }
 }
 
-export async function getMempool() {
-  const mempool: GetMempoolRPCResult = (await bitcoinRPC(['getmempoolinfo']))[0]
-    .result;
-  return toMempool(mempool);
-}
-
-function toMempool(mempool: GetMempoolRPCResult) {
-  return {
-    numberOfTxs: mempool.size.toFixed(0),
-    minimumFee: mempool.mempoolminfee,
-    // need more info for blocksToClear
-    blocksToClear: '5'
-  };
-}
-
+//
+// System Status section
+//
 export async function getSystemStatus() {
   const uptime = time();
   const memory = await mem();
@@ -150,27 +142,38 @@ export async function getSystemStatus() {
   };
 }
 
-export async function getSummary() {
-  const blockchainInfo = await RPCClient.getblockchaininfo();
-  const networkInfo = await RPCClient.getnetworkinfo();
-  return toSummary(blockchainInfo, networkInfo);
+export function secondsToTime(seconds: number): string {
+  seconds = Math.floor(seconds);
+
+  const days = Math.floor(seconds / (3600 * 24));
+  seconds -= days * 3600 * 24;
+
+  const hours = Math.floor(seconds / 3600);
+  seconds -= hours * 3600;
+
+  const minutes = Math.floor(seconds / 60);
+  seconds -= minutes * 60;
+
+  const remainingSeconds = seconds;
+
+  let timeString = '';
+
+  if (days > 0) timeString += `${days}d`;
+  if (hours > 0) timeString += `${hours}h`;
+  if (minutes > 0) timeString += `${minutes}m`;
+  if (remainingSeconds > 0 || timeString === '') {
+    timeString += `${remainingSeconds}s`;
+  }
+  return timeString.replace(/,\s*$/, '');
 }
 
-function toSummary(summary: BlockchainInfo, networkInfo: NetworkInfo) {
-  return {
-    blockCount: summary.blocks.toLocaleString(),
-    syncStatus: (summary.verificationprogress * 100).toFixed(0) + '%',
-    blockchainSize: formatBytesToGB(summary.size_on_disk) + ' GB',
-    connectionsOutbound: networkInfo.connections_out.toString(),
-    connectionsInbound: networkInfo.connections_in.toString()
-  };
+export function celciusToFahrenheit(c: number): number {
+  return c * (9 / 5) + 32;
 }
 
-function formatBytesToGB(bytes: number) {
-  const gigabytes = bytes / 1000 ** 3;
-  return gigabytes.toFixed(1);
-}
-
+//
+// Fees section
+//
 export async function getFeeData() {
   const { feerate: immediate } = await RPCClient.estimateSmartFee([1]);
   const { feerate: hour } = await RPCClient.estimateSmartFee([1]);
@@ -194,6 +197,120 @@ function convertToSatPerByte(feeRateInBTCPerKB: number) {
   return Math.ceil((feeRateInBTCPerKB * 100000000) / 1024);
 }
 
+//
+// Mining section
+//
+export async function getMiningData() {
+  const blockCount = (await bitcoinRPC(['getblockcount']))[0].result;
+  const currentBlockHash = (
+    await bitcoinRPC(['getblockhash'], [[blockCount]])
+  )[0].result;
+  const currentBlock = (await bitcoinRPC(['getblock'], [[currentBlockHash]]))[0]
+    .result;
+  const currentBlockTime = currentBlock.time as number;
+
+  const halvings = Math.floor(blockCount / 210000);
+  const currentSubsidy = 50 / 2 ** halvings;
+
+  const blocksUntilHalving = 210000 - (blockCount % 210000);
+  const secondsUntilHalving = blocksUntilHalving * secondsPerBlock;
+  const estimatedHalvingDate = (currentBlockTime + secondsUntilHalving) * 1000;
+
+  // Current network hashrate (rough estimate)
+  const difficulty = currentBlock.difficulty as number;
+  const estimatedHashrate = (difficulty * 2 ** 32) / 600; // In H/s
+
+  return toMiningData(
+    blockCount,
+    currentSubsidy,
+    blocksUntilHalving,
+    estimatedHalvingDate,
+    estimatedHashrate
+  );
+}
+
+function toMiningData(
+  blockCount: number,
+  currentSubsidy: number,
+  blocksUntilHalving: number,
+  estimatedHalvingDate: number,
+  estimatedHashrate: number
+) {
+  const coins = calculateMinedBitcoin(blockCount);
+  const coinPercent = (coins / 21000000) * 100;
+
+  return {
+    coins: Math.round(coins).toLocaleString() + ` (${coinPercent.toFixed(2)}%)`,
+    blockSubsidy: currentSubsidy + ' BTC',
+    blocksUntilHalving: blocksUntilHalving.toLocaleString(),
+    halvingEstimate: new Date(estimatedHalvingDate).toLocaleDateString(
+      'en-US',
+      localeOptions
+    ),
+    networkHashRate: convertHtoEH(estimatedHashrate).toFixed(1) + ' EH/s'
+  };
+}
+
+function calculateMinedBitcoin(blockHeight: number): number {
+  const initialReward = 50; // Initial reward in BTC
+  const halvingInterval = 210000; // Blocks per halving
+  let totalBitcoinMined = 0;
+
+  // Calculate rewards for each halving period
+  let currentReward = initialReward;
+  let remainingBlocks = blockHeight;
+
+  while (remainingBlocks > 0) {
+    // Determine the blocks in the current halving period
+    const blocksInCurrentPeriod = Math.min(halvingInterval, remainingBlocks);
+
+    // Add the mined bitcoins from this halving period
+    totalBitcoinMined += blocksInCurrentPeriod * currentReward;
+
+    // Move to the next halving period
+    currentReward /= 2;
+    remainingBlocks -= halvingInterval;
+  }
+
+  // Subtract genesis block reward as it wasn't spendable
+  if (blockHeight > 0) {
+    totalBitcoinMined -= 50;
+  }
+
+  return totalBitcoinMined;
+}
+
+function convertHtoEH(hashRateH: number): number {
+  // 1 EH/s = 10^18 H/s
+  const EHPerSecond = hashRateH / Math.pow(10, 18);
+  return EHPerSecond;
+}
+
+//
+// Mempool section
+//
+export async function getMempool() {
+  const mempool: GetMempoolRPCResult = (await bitcoinRPC(['getmempoolinfo']))[0]
+    .result;
+  return toMempool(mempool);
+}
+
+function toMempool(mempool: GetMempoolRPCResult) {
+  return {
+    numberOfTxs: mempool.size.toFixed(0),
+    minimumFee: mempool.mempoolminfee,
+    // need more info for blocksToClear
+    blocksToClear: '5'
+  };
+}
+
+//
+// Difficulty section
+//
+const expectedAdjustmentTime = 1209600;
+const maxAdjustmentFactor = 4;
+const blocksPerRetarget = 2016;
+const secondsPerBlock = 600;
 export async function getDifficultyData() {
   const difficulty = (await bitcoinRPC(['getdifficulty']))[0].result as number;
   const blockCount = (await bitcoinRPC(['getblockcount']))[0].result;
@@ -314,92 +431,6 @@ function formatScientificNotation(number: number): string {
 
   // Combine everything into the desired format
   return `${formattedCoefficient}×10${sign}${superscript}`;
-}
-
-export async function getMiningData() {
-  const blockCount = (await bitcoinRPC(['getblockcount']))[0].result;
-  const currentBlockHash = (
-    await bitcoinRPC(['getblockhash'], [[blockCount]])
-  )[0].result;
-  const currentBlock = (await bitcoinRPC(['getblock'], [[currentBlockHash]]))[0]
-    .result;
-  const currentBlockTime = currentBlock.time as number;
-
-  const halvings = Math.floor(blockCount / 210000);
-  const currentSubsidy = 50 / 2 ** halvings;
-
-  const blocksUntilHalving = 210000 - (blockCount % 210000);
-  const secondsUntilHalving = blocksUntilHalving * secondsPerBlock;
-  const estimatedHalvingDate = (currentBlockTime + secondsUntilHalving) * 1000;
-
-  // Current network hashrate (rough estimate)
-  const difficulty = currentBlock.difficulty as number;
-  const estimatedHashrate = (difficulty * 2 ** 32) / 600; // In H/s
-
-  return toMiningData(
-    blockCount,
-    currentSubsidy,
-    blocksUntilHalving,
-    estimatedHalvingDate,
-    estimatedHashrate
-  );
-}
-
-function toMiningData(
-  blockCount: number,
-  currentSubsidy: number,
-  blocksUntilHalving: number,
-  estimatedHalvingDate: number,
-  estimatedHashrate: number
-) {
-  const coins = calculateMinedBitcoin(blockCount);
-  const coinPercent = (coins / 21000000) * 100;
-
-  return {
-    coins: Math.round(coins).toLocaleString() + ` (${coinPercent.toFixed(2)}%)`,
-    blockSubsidy: currentSubsidy + ' BTC',
-    blocksUntilHalving: blocksUntilHalving.toLocaleString(),
-    halvingEstimate: new Date(estimatedHalvingDate).toLocaleDateString(
-      'en-US',
-      localeOptions
-    ),
-    networkHashRate: convertHtoEH(estimatedHashrate).toFixed(1) + ' EH/s'
-  };
-}
-
-function calculateMinedBitcoin(blockHeight: number): number {
-  const initialReward = 50; // Initial reward in BTC
-  const halvingInterval = 210000; // Blocks per halving
-  let totalBitcoinMined = 0;
-
-  // Calculate rewards for each halving period
-  let currentReward = initialReward;
-  let remainingBlocks = blockHeight;
-
-  while (remainingBlocks > 0) {
-    // Determine the blocks in the current halving period
-    const blocksInCurrentPeriod = Math.min(halvingInterval, remainingBlocks);
-
-    // Add the mined bitcoins from this halving period
-    totalBitcoinMined += blocksInCurrentPeriod * currentReward;
-
-    // Move to the next halving period
-    currentReward /= 2;
-    remainingBlocks -= halvingInterval;
-  }
-
-  // Subtract genesis block reward as it wasn't spendable
-  if (blockHeight > 0) {
-    totalBitcoinMined -= 50;
-  }
-
-  return totalBitcoinMined;
-}
-
-function convertHtoEH(hashRateH: number): number {
-  // 1 EH/s = 10^18 H/s
-  const EHPerSecond = hashRateH / Math.pow(10, 18);
-  return EHPerSecond;
 }
 
 type GetMempoolRPCResult = {

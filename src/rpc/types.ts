@@ -63,3 +63,30 @@ export type SmartFeeEstimate = {
   errors: string[];
   blocks: number;
 };
+
+// CoinGecko API types
+export type CGMarketData = {
+  current_price: {
+    usd: number;
+  };
+  ath: {
+    usd: number;
+  };
+  market_cap: {
+    usd: number;
+  };
+  ath_date: {
+    usd: string;
+  };
+  ath_change_percentage: {
+    usd: number;
+  };
+};
+
+export type CGPriceData = {
+  price: string;
+  marketCap: string;
+  ath: string;
+  declineFromAth: string;
+  athDate: string;
+};

@@ -1,6 +1,8 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import dashboardRouter from './routes/dashboard';
+import RPCClient from './rpc/index';
 
 dotenv.config();
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
@@ -16,7 +18,7 @@ server.use(
   })
 );
 
-import dashboardRouter from './routes/dashboard';
+console.log('rpc test', RPCClient.getblockchaininfo());
 
 server.use('/dashboard', dashboardRouter);
 

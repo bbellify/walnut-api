@@ -244,12 +244,14 @@ export async function getDifficultyData() {
     )
   );
 
-  const newDifficulty = lastRetargetBlockDifficulty * adjustmentFactor;
+  let newDifficulty = lastRetargetBlockDifficulty * adjustmentFactor;
+  newDifficulty = Number(newDifficulty.toFixed(8));
+  console.log('new dif', newDifficulty);
+  console.log('old dif', lastRetargetBlockDifficulty);
 
   const percentageChange =
-    ((newDifficulty - lastRetargetBlockDifficulty) /
-      lastRetargetBlockDifficulty) *
-    100;
+    (newDifficulty - lastRetargetBlockDifficulty) /
+    (lastRetargetBlockDifficulty * 100);
 
   return toDifficultyData(
     difficulty,

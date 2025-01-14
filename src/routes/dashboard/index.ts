@@ -72,7 +72,7 @@ setInterval(async () => {
     SSE.sendUpdate<CGPriceData | object>({
       update: {
         type: 'price',
-        data: await getPriceData(),
+        data: priceData,
         timestamp: new Date().toISOString()
       }
     });

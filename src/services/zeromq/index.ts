@@ -94,7 +94,7 @@ export default class BlockSubscriber {
       }
     });
     // latest blocks
-    const latestBlocksData = getLatestBlocksData();
+    const latestBlocksData = await getLatestBlocksData();
     SSE.sendUpdate({
       update: {
         type: 'latestblocks',

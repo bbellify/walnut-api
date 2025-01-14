@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
-import RPCClient from '../../rpc';
+import RPCClient from '../../services/rpc';
 import { Transaction } from 'bitcoinjs-lib';
 import { cpuTemperature, mem, currentLoad, time } from 'systeminformation';
 
@@ -12,7 +12,7 @@ import {
   CGPriceData,
   SystemStatus,
   Block
-} from '../../rpc/types';
+} from '../../services/rpc/types';
 
 dotenv.config();
 

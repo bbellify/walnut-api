@@ -1,5 +1,5 @@
 import express, { Request, Response, Router } from 'express';
-import SSE from '../../sse';
+import SSE from '../../services/sse';
 import {
   getSummaryData,
   getPriceData,
@@ -11,7 +11,7 @@ import {
   getNextBlockData,
   getLatestBlocksData
 } from './data';
-import { CGPriceData, SystemStatus } from '../../rpc/types';
+import { CGPriceData, SystemStatus } from '../../services/rpc/types';
 
 const router: Router = express.Router();
 

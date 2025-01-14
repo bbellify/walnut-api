@@ -21,7 +21,8 @@
     "express": "^4.19.2",
     "express-sse": "^0.5.3",
     "node-fetch": "^3.3.2",
-    "systeminformation": "^5.25.9"
+    "systeminformation": "^5.25.9",
+    "zeromq": "^6.3.0"
   },
   "optionalDependencies": {
     "osx-temperature-sensor": "^1.0.8"
